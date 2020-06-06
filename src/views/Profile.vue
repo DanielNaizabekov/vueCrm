@@ -87,8 +87,23 @@
           <div class="profile-form-error" v-show="form.errors">{{ form.errors }}</div>
         </v-scroll-x-transition>
         <v-spacer/>
-        <v-btn type="submit" class="mr-4 text-capitalize" color="primary">save changes</v-btn>
-        <v-btn class="text-capitalize" color="orange" outlined>reset</v-btn>
+        <v-btn
+          type="submit"
+          class="mr-4 text-capitalize"
+          color="primary"
+          :disabled="isFormChanged"
+        >
+          save changes
+        </v-btn>
+        <v-btn
+          @click="formReset"
+          class="text-capitalize"
+          color="orange"
+          outlined
+          :disabled="isFormChanged"
+        >
+          reset
+        </v-btn>
       </v-row>
     </form>
   </div>
@@ -106,6 +121,7 @@ export default {
   data() {
     return {
       profileValidations,
+      formFields: ['name', 'lastName', 'bill', 'country'],
       form: {
         name: '',
         lastName: '',
@@ -122,7 +138,7 @@ export default {
     form: {
       country: {
         isString: val => {
-          let hasNumber = val.split('').find(sym => !isNaN(sym));
+          let hasNumber = val.split('').find(sym => !isNaN(sym) && sym !== ' ');
           return !hasNumber;
         },
       },
@@ -134,6 +150,14 @@ export default {
       countriesList: COUNTRIES,
       userData: USER_DATA,
     }),
+    isFormChanged() {
+      const userData = {...this.userData};
+      let hasChangedFields = this.formFields.find(key => {
+        !userData[key] && (userData[key] = '');
+        return (this.form[key]).toString() !== (userData[key]).toString();
+      });
+      return !hasChangedFields;
+    },
   },
   methods: {
     ...mapActions({
@@ -175,24 +199,26 @@ export default {
       this.form.selectedCountry = countryName;
     },
     onCloseCountrySelect() {
+      if (this.form.country === '') return;
       let fullCountryName = this.countriesList.find(item => {
         return item.trim().toLowerCase() === this.form.country.trim().toLowerCase();
       });
       !fullCountryName && this.countriesListMutation([]);
-      this.onSelectCountry(fullCountryName || '');
+      this.onSelectCountry(fullCountryName || this.userData.country || '');
     },
     onSubmit() {
       this.form.errors = '';
-      const body = {
-        name: this.form.name,
-        lastName: this.form.lastName,
-        bill: this.form.bill,
-        country: this.form.country,
-      };
+      const body = {};
+      this.formFields.forEach(key => body[key] = this.form[key]);
 
       this.updateUserData({ body })
+      .then(() => this.loadUserData())
       .then(() => this.$notification({ text: 'Your data has been updated successfully !' }))
       .catch(e => this.form.errors = this.getServerErrors(e))
+    },
+    formReset() {
+      this.formFields.forEach(key => this.form[key] = this.userData[key] || '');
+      this.form.errors = '';
     },
   },
   mounted() {
@@ -203,11 +229,7 @@ export default {
       ? userData = response
       : Object.keys(response).forEach(key => userData = response[key]);
 
-      let { name, lastName, bill, country } = userData;
-      this.form.name = name;
-      this.form.lastName = lastName;
-      this.form.bill = bill;
-      this.form.country = country;
+      this.formFields.forEach(key => this.form[key] = userData[key] || '');
     })
     .catch(() => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }));
   },
