@@ -53,7 +53,10 @@ export default {
   },
   mounted() {
     this.documentBody = document.querySelector('body');
-    this.closeHandler = () => this.isOpen = false;
+    this.closeHandler = () => {
+      this.isOpen = false;
+      this.$emit('onClose');
+    };
   },
 }
 </script>

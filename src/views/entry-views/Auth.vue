@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <div>
     <EntryForm>
       <form class="auth-form" @submit.prevent="authSubmit">
         <v-text-field
@@ -54,15 +54,12 @@
       :resetLoading="resetLoading"
       @resetPassword="resetPassword"
     />
-
-    <notification v-model="notification" text="Recovery instructions sent to email"/>
-  </v-app>
+  </div>
 </template>
 
 <script>
 import EntryForm from './EntryForm';
 import ResetModal from './ResetModal';
-import Notification from '@/components/app/Notification';
 import { mapActions } from 'vuex';
 import { required, minLength, email } from 'vuelidate/lib/validators';
 import { AUTH, SEND_PASSWORD_RESET_EMAIL } from '@/consts';
@@ -70,14 +67,14 @@ import prepareErrors from '@/mixins/prepareErrors.mixin.js';
 import { authValidations } from '@/utils/validationOptions';
 
 export default {
-  components: { EntryForm, ResetModal, Notification },
+  components: { EntryForm, ResetModal },
   data() {
     return {
       authValidations,
       auth: {
-        email: 'daniel@gmail.com',
-        password: 'daniel',
-        acceptPolicy: true,
+        email: '',
+        password: '',
+        acceptPolicy: false,
         isShowPassword: false,
         errors: '',
         loading: false,
@@ -85,7 +82,6 @@ export default {
       isOpenResetModal: false,
       resetErrors: '',
       resetLoading: false,
-      notification: false,
     };
   },
   validations: {
@@ -116,7 +112,7 @@ export default {
 
       try {
         await this.sendPasswordResetEmail({ body : { email } });
-        this.notification = true;
+        this.$notification({text: 'Recovery instructions sent to e-mail'})
         this.resetLoading = false;
         this.closeResetModal();
       } catch (e) {

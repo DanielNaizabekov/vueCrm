@@ -11,13 +11,15 @@ import {
 } from '../../consts';
 
 const state = {
-  token: null,
-  currentUserId: null,
+  // token: null,
+  // currentUserId: null,
+  userData: {},
 };
 
 const getters = {
-  hasToken: s => !!s.token,
-  getCurrentUserId: s => s.currentUserId,
+  // hasToken: s => !!s.token,
+  // getCurrentUserId: s => s.currentUserId,
+  [USER_DATA]: s => s.userData,
 };
 
 const actions = {
@@ -43,22 +45,29 @@ const actions = {
     return dispatch(HTTP_POST_AUTH, { method: CONFIRM_PASSWORD_RESET, body, mutation: false })
   },
   [USER_DATA]({ dispatch }) {
-    return dispatch(HTTP_GET, { method: USER_DATA, mutation: false });
+    return dispatch(HTTP_GET, { method: USER_DATA });
   },
 };
 
 const mutations = {
   [AUTH](state, data) {
-    state.token = data.idToken;
-    state.currentUserId = data.localId;
+    // state.token = data.idToken;
+    // state.currentUserId = data.localId;
     localStorage.setItem( 'token', JSON.stringify(data.idToken) );
     localStorage.setItem( 'currentUserId', JSON.stringify(data.localId) );
   },
   [REGISTER](state, data) {
-    state.token = data.idToken;
-    state.currentUserId = data.localId;
+    // state.token = data.idToken;
+    // state.currentUserId = data.localId;
     localStorage.setItem( 'token', JSON.stringify(data.idToken) );
     localStorage.setItem( 'currentUserId', JSON.stringify(data.localId) );
+  },
+  [USER_DATA](state, data) {
+    let userData = {};
+    data.name
+    ? userData = data
+    : Object.keys(data).forEach(key => userData = data[key]);
+    state.userData = userData;
   },
   [LOGOUT](state) {
     state.token = null;

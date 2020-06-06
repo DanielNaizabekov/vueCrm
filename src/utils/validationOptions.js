@@ -103,3 +103,16 @@ export const resetPasswordValidations = {
   },
 };
 // ==== reset password validation options ====
+
+
+// ==== profile page validation options ====
+export const profileValidations = {
+  country: {
+    path: 'form.country',
+    methods: ['isString'],
+    hints: {
+      isString: 'Requires string',
+    },
+  },
+};
+// ==== profile page validation options ====

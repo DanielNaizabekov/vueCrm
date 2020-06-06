@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <div>
     <EntryForm title="sign up">
       <form class="register-form">
         <v-text-field
@@ -62,7 +62,7 @@
         </button>
       </template>
     </EntryForm>
-  </v-app>
+  </div>
 </template>
 
 <script>

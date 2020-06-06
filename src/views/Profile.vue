@@ -6,25 +6,27 @@
       </v-avatar>
 
       <div>
-        <p class="my-0">Angelo Sashington</p>
+        <p class="my-0">{{ userData.name }}</p>
         <v-btn class="mt-2 mr-4 text-capitalize" color="primary">change avatar</v-btn>
         <v-btn class="mt-2 text-capitalize" color="red" outlined>remove avatar</v-btn>
       </div>
     </div>
 
-    <form class="mt-7">
+    <form @submit.prevent="onSubmit" class="mt-7">
       <v-row class="mx-0">
         <v-text-field
           class="col-12 col-sm mr-sm-2"
           label="Name"
           outlined
           dense
+          v-model="form.name"
         />
         <v-text-field
           class="col-12 col-sm ml-sm-2"
           label="Last name"
           outlined
           dense
+          v-model="form.lastName"
         />
       </v-row>
 
@@ -32,27 +34,42 @@
         <v-text-field
           class="col-12 col-sm mr-sm-2"
           label="Bill"
-          autocomplete="off"
           outlined
           dense
+          v-model="form.bill"
         />
 
-        <drop-list class="country-input-wrapper col-12 col-sm ml-sm-2" ref="dropList">
+        <drop-list
+          class="country-input-wrapper col-12 col-sm ml-sm-2"
+          ref="dropList"
+          @onClose="onCloseCountrySelect"
+        >
           <template #activator>
             <v-text-field
               label="Country"
               outlined
               dense
               autocomplete="off"
+              :error-messages="getValidationErrors(profileValidations.country)"
               @click.stop="onOpenCountrySelect"
               @input="countryInputQuery"
               v-model="form.country"
-            />
+            >
+              <template #append>
+                <v-fade-transition>
+                  <v-progress-circular
+                    v-if="form.countryInputLoading"
+                    size="24"
+                    indeterminate
+                  />
+                </v-fade-transition>
+              </template>
+            </v-text-field>
           </template>
 
-          <ul class="country-list">
+          <ul v-if="countriesList.length" class="country-list">
             <li
-              v-for="item in countryList"
+              v-for="item in countriesList"
               :key="item"
               class="country-list-item"
               :class="{active: item === form.selectedCountry}"
@@ -66,8 +83,11 @@
       </v-row>
       
       <v-row class="mx-0 mt-2">
+        <v-scroll-x-transition>
+          <div class="profile-form-error" v-show="form.errors">{{ form.errors }}</div>
+        </v-scroll-x-transition>
         <v-spacer/>
-        <v-btn class="mr-4 text-capitalize" color="primary">save changes</v-btn>
+        <v-btn type="submit" class="mr-4 text-capitalize" color="primary">save changes</v-btn>
         <v-btn class="text-capitalize" color="orange" outlined>reset</v-btn>
       </v-row>
     </form>
@@ -75,41 +95,124 @@
 </template>
 
 <script>
-import DropList from './DropList';
+import { mapGetters, mapActions, mapMutations } from 'vuex';
+import DropList from '@/components/app/DropList';
+import prepareErrors from '@/mixins/prepareErrors.mixin.js';
+import { profileValidations } from '@/utils/validationOptions';
+import { COUNTRIES, USER_DATA, UPDATE_USER_DATA } from '@/consts';
 
 export default {
-  components: {
-    DropList,
-  },
+  components: { DropList },
   data() {
     return {
+      profileValidations,
       form: {
+        name: '',
+        lastName: '',
+        bill: '',
         country: '',
         selectedCountry: '',
+        countryInputLoading: false,
+        countryInputTimer: () => {},
+        errors: '',
       },
-      countryList: [],
     };
   },
+  validations: {
+    form: {
+      country: {
+        isString: val => {
+          let hasNumber = val.split('').find(sym => !isNaN(sym));
+          return !hasNumber;
+        },
+      },
+    },
+  },
+  mixins: [prepareErrors],
+  computed: {
+    ...mapGetters({
+      countriesList: COUNTRIES,
+      userData: USER_DATA,
+    }),
+  },
   methods: {
+    ...mapActions({
+      countriesSearch: COUNTRIES,
+      loadUserData: USER_DATA,
+      updateUserData: UPDATE_USER_DATA,
+    }),
+    ...mapMutations({
+      countriesListMutation: COUNTRIES,
+    }),
     onOpenCountrySelect() {
       this.$refs.dropList.onOpen();
     },
-    async countryInputQuery() {
-      try {
-        let response = await fetch('https://restcountries.eu/rest/v2/name/' + this.form.country);
-        let data = await response.json();
-        this.countryList = data.map(item => item.name);
-      } catch (e) {
-        this.countryList = [];
-        console.log(e);
+    countryInputQuery() {
+      clearTimeout(this.form.countryInputTimer);
+      if(this.$v.form.country.$invalid) {
+        this.$v.form.country.$touch()
+        this.countriesListMutation([]);
+        this.form.countryInputLoading = false;
+        return
       }
+      this.form.countryInputLoading = true;
 
-      this.$nextTick(() => this.onOpenCountrySelect());
+      this.form.countryInputTimer = setTimeout(async () => {
+        try {
+          this.form.country
+          ? await this.countriesSearch(this.form.country)
+          : this.countriesListMutation([]);
+          this.form.countryInputLoading = false;
+        } catch {
+          this.form.countryInputLoading = false;
+        }
+
+        this.$nextTick(() => this.onOpenCountrySelect());
+      }, 350);
     },
     onSelectCountry(countryName) {
       this.form.country = countryName;
       this.form.selectedCountry = countryName;
     },
+    onCloseCountrySelect() {
+      let fullCountryName = this.countriesList.find(item => {
+        return item.trim().toLowerCase() === this.form.country.trim().toLowerCase();
+      });
+      !fullCountryName && this.countriesListMutation([]);
+      this.onSelectCountry(fullCountryName || '');
+    },
+    onSubmit() {
+      this.form.errors = '';
+      const body = {
+        name: this.form.name,
+        lastName: this.form.lastName,
+        bill: this.form.bill,
+        country: this.form.country,
+      };
+
+      this.updateUserData({ body })
+      .then(() => this.$notification({ text: 'Your data has been updated successfully !' }))
+      .catch(e => this.form.errors = this.getServerErrors(e))
+    },
+  },
+  mounted() {
+    this.loadUserData()
+    .then(response => {
+      let userData = {};
+      response.name
+      ? userData = response
+      : Object.keys(response).forEach(key => userData = response[key]);
+
+      let { name, lastName, bill, country } = userData;
+      this.form.name = name;
+      this.form.lastName = lastName;
+      this.form.bill = bill;
+      this.form.country = country;
+    })
+    .catch(() => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }));
+  },
+  beforeDestroy() {
+    this.countriesListMutation([]);
   },
 }
 </script>
@@ -121,7 +224,6 @@ export default {
   padding: 30px;
   max-width: 800px;
 }
-
 @media(max-width: 450px)  {
   .profile-wrapper {
     padding: 15px;
@@ -132,13 +234,11 @@ export default {
   padding: 0;
   height: 40px;
 }
-
 .country-list {
   padding: 8px 0;
   background: #fff;
   font-size: 13px;
 }
-
 .country-list-item {
   padding: 10px 18px;
   transition: 0.3s;
@@ -151,10 +251,9 @@ export default {
 .country-list-item.active {
   background: #c5dbe6;
 }
-</style>
 
-<style>
-.entered-letters {
-  background: #E9EBEC;
+.profile-form-error {
+  color: #ff5252;
+  font-size: 12px;
 }
 </style>

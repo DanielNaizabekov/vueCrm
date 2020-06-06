@@ -1,22 +1,22 @@
 <template>
-  <v-app>
+  <div>
     <v-navigation-drawer v-model="drawer" app>
       <Sidebar />
     </v-navigation-drawer>
 
-    <Navbar :userName="userData.name" @toggleSidebar="toggleSidebar" />
+    <Navbar @toggleSidebar="toggleSidebar" />
 
     <v-content>
       <section class="main-section">
         <router-view/>
       </section>
     </v-content>
-  </v-app>
+  </div>
 </template>
 
 <script>
-import Sidebar from './Sidebar'
-import Navbar from './Navbar'
+import Sidebar from './Sidebar';
+import Navbar from './Navbar';
 
 export default {
   components: {
@@ -26,17 +26,12 @@ export default {
   data() {
     return {
       drawer: false,
-      userData: {},
     };
   },
   methods: {
     toggleSidebar() {
       this.drawer = !this.drawer;
     },
-  },
-  mounted() {
-    this.$store.dispatch('USER_DATA')
-      .then(response => Object.keys(response).forEach(key => this.userData = response[key]));
   },
 };
 </script>

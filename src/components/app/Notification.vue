@@ -1,16 +1,16 @@
 <template>
   <v-snackbar
-    v-model="snackbar"
+    v-model="isOpen"
     :timeout="timeout"
+    :color="color"
     top
     right
   >
     {{ text }}
     <v-btn
       v-if="closable"
-      color="blue"
       text
-      @click="snackbar = false"
+      @click="isOpen = false"
     >
       Close
     </v-btn>
@@ -18,37 +18,27 @@
 </template>
 
 <script>
+import { bus } from '@/main';
+
 export default {
   name: 'notification',
-  props: {
-    value: {
-      type: Boolean,
-    },
-    text: {
-      type: String,
-      default: 'Notification text',
-    },
-    closable: {
-      type: Boolean,
-      default: true,
-    },
-    timeout: {
-      type: Number,
-      default: 8000,
-    },
-  },
   data() {
     return {
-      snackbar: null,
+      isOpen: false,
+      text: 'Notification text',
+      color: 'blue-grey lighten-1',
+      timeout: 8000,
+      closable: true,
     };
   },
-  watch: {
-    value(v) {
-      this.snackbar = v;
-    },
-    snackbar(v) {
-      this.$emit('input', v);
-    },
+  created() {
+    bus.$on('openNotification', ({ text, color, timeout, closable }) => {
+      this.isOpen = true;
+      text && (this.text = text);
+      color && (this.color = color);
+      timeout && (this.timeout = timeout);
+      (closable === false || closable === true) && (this.closable = closable);
+    })
   },
 }
 </script>

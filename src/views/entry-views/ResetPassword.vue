@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <div>
     <overlay v-if="loading">
       <v-progress-circular indeterminate color="#fff"/>
     </overlay>
@@ -49,7 +49,7 @@
         <v-btn @click="submit" dark color="blue-grey darken-1">Reset</v-btn>
       </div>
     </EntryForm>
-  </v-app>
+  </div>
 </template>
 
 <script>

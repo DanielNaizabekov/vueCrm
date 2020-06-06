@@ -24,7 +24,7 @@
             style="background: url('https://cdn.vuetifyjs.com/images/lists/ali.png') center / cover"
             class="profile-title-img"
           />
-          <div class="profile-title mx-auto">{{ userName }}</div>
+          <div class="profile-title mx-auto">{{ userData.name }}</div>
         </v-card-title>
 
         <v-list nav dense>
@@ -47,20 +47,21 @@
 <script>
 import { LOGOUT } from '@/consts';
 import TransitionCard from './TransitionCard';
+import { USER_DATA } from '@/consts';
 
 export default {
   components: {
     TransitionCard,
   },
-  props: {
-    userName: {
-      type: String,
-    },
-  },
   data() {
     return {
       isAvatarOpen: false,
     };
+  },
+  computed: {
+    userData() {
+      return this.$store.getters[USER_DATA];
+    },
   },
   methods: {
     toggleSidebar() {
@@ -76,6 +77,10 @@ export default {
       this.$store.commit(LOGOUT);
       this.$router.push({name: 'auth'});
     },
+  },
+  mounted() {
+    this.$store.dispatch(USER_DATA)
+    .catch(() => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }));
   },
 }
 </script>
