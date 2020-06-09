@@ -9,11 +9,8 @@
       <template #activator>
         <v-btn @click.stop="onAvatarOpen" icon>
           <v-avatar size="36" color="indigo">
-            <!-- <v-icon>account_circle</v-icon> -->
-            <img
-              src="https://cdn.vuetifyjs.com/images/lists/ali.png"
-              alt="photo"
-            >
+            <img v-if="userData.avatarUrl" :src="userData.avatarUrl" alt="avatar"/>
+            <v-icon v-else dark>account_circle</v-icon>
           </v-avatar>
         </v-btn>
       </template>
@@ -21,7 +18,7 @@
       <v-card light min-width="150" class="mx-auto">
         <v-card-title class="profile-title-wrapper font-weight-regular pt-2 pb-1 px-5">
           <div
-            style="background: url('https://cdn.vuetifyjs.com/images/lists/ali.png') center / cover"
+            :style="`background: url(${userData.avatarUrl}) center / cover`"
             class="profile-title-img"
           />
           <div class="profile-title mx-auto">{{ userData.name }}</div>

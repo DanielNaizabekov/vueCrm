@@ -1,7 +1,6 @@
 import {
   HTTP_POST_AUTH,
   HTTP_POST,
-  HTTP_GET,
   AUTH,
   REGISTER,
   SEND_PASSWORD_RESET_EMAIL,
@@ -13,13 +12,11 @@ import {
 const state = {
   // token: null,
   // currentUserId: null,
-  userData: {},
 };
 
 const getters = {
   // hasToken: s => !!s.token,
   // getCurrentUserId: s => s.currentUserId,
-  [USER_DATA]: s => s.userData,
 };
 
 const actions = {
@@ -44,9 +41,6 @@ const actions = {
   [CONFIRM_PASSWORD_RESET]({ dispatch }, { body }) {
     return dispatch(HTTP_POST_AUTH, { method: CONFIRM_PASSWORD_RESET, body, mutation: false })
   },
-  [USER_DATA]({ dispatch }) {
-    return dispatch(HTTP_GET, { method: USER_DATA });
-  },
 };
 
 const mutations = {
@@ -61,13 +55,6 @@ const mutations = {
     // state.currentUserId = data.localId;
     localStorage.setItem( 'token', JSON.stringify(data.idToken) );
     localStorage.setItem( 'currentUserId', JSON.stringify(data.localId) );
-  },
-  [USER_DATA](state, data) {
-    let userData = {};
-    data.name
-    ? userData = data
-    : Object.keys(data).forEach(key => userData = data[key]);
-    state.userData = userData;
   },
   [LOGOUT](state) {
     state.token = null;

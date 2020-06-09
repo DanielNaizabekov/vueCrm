@@ -1,16 +1,7 @@
 <template>
   <div class="profile-wrapper">
-    <div class="d-flex align-center">
-      <v-avatar tile class="mr-7" color="indigo" min-height="84" min-width="84">
-        <v-icon dark>account_circle</v-icon>
-      </v-avatar>
-
-      <div>
-        <p class="my-0">{{ userData.name }}</p>
-        <v-btn class="mt-2 mr-4 text-capitalize" color="primary">change avatar</v-btn>
-        <v-btn class="mt-2 text-capitalize" color="red" outlined>remove avatar</v-btn>
-      </div>
-    </div>
+    
+    <ProfileAvatar/>
 
     <form @submit.prevent="onSubmit" class="mt-7">
       <v-row class="mx-0">
@@ -111,13 +102,14 @@
 
 <script>
 import { mapGetters, mapActions, mapMutations } from 'vuex';
+import ProfileAvatar from '@/components/ProfileAvatar';
 import DropList from '@/components/app/DropList';
 import prepareErrors from '@/mixins/prepareErrors.mixin.js';
 import { profileValidations } from '@/utils/validationOptions';
 import { COUNTRIES, USER_DATA, UPDATE_USER_DATA } from '@/consts';
 
 export default {
-  components: { DropList },
+  components: { ProfileAvatar, DropList },
   data() {
     return {
       profileValidations,
@@ -151,10 +143,8 @@ export default {
       userData: USER_DATA,
     }),
     isFormChanged() {
-      const userData = {...this.userData};
       let hasChangedFields = this.formFields.find(key => {
-        !userData[key] && (userData[key] = '');
-        return (this.form[key]).toString() !== (userData[key]).toString();
+        return (this.form[key]).toString() !== (this.userData[key] ? (this.userData[key]).toString() : '');
       });
       return !hasChangedFields;
     },
@@ -212,7 +202,6 @@ export default {
       this.formFields.forEach(key => body[key] = this.form[key]);
 
       this.updateUserData({ body })
-      .then(() => this.loadUserData())
       .then(() => this.$notification({ text: 'Your data has been updated successfully !' }))
       .catch(e => this.form.errors = this.getServerErrors(e))
     },
@@ -223,14 +212,7 @@ export default {
   },
   mounted() {
     this.loadUserData()
-    .then(response => {
-      let userData = {};
-      response.name
-      ? userData = response
-      : Object.keys(response).forEach(key => userData = response[key]);
-
-      this.formFields.forEach(key => this.form[key] = userData[key] || '');
-    })
+    .then(() => this.formFields.forEach(key => this.form[key] = this.userData[key] || ''))
     .catch(() => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }));
   },
   beforeDestroy() {
