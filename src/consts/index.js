@@ -8,6 +8,7 @@ export const COUNTRIES = 'COUNTRIES';
 export const UPDATE_USER_DATA = 'UPDATE_USER_DATA';
 export const UPLOAD_MEDIA = 'UPLOAD_MEDIA';
 export const DOWNLOAD_MEDIA = 'DOWNLOAD_MEDIA';
+export const DELETE_MEDIA = 'DELETE_MEDIA';
 
 // requests
 export const HTTP_POST_AUTH = 'HTTP_POST_AUTH';

@@ -9,7 +9,7 @@
       <template #activator>
         <v-btn @click.stop="onAvatarOpen" icon>
           <v-avatar size="36" color="indigo">
-            <img v-if="userData.avatarUrl" :src="userData.avatarUrl" alt="avatar"/>
+            <img v-if="avatarUrl" :src="avatarUrl" alt="avatar"/>
             <v-icon v-else dark>account_circle</v-icon>
           </v-avatar>
         </v-btn>
@@ -18,7 +18,7 @@
       <v-card light min-width="150" class="mx-auto">
         <v-card-title class="profile-title-wrapper font-weight-regular pt-2 pb-1 px-5">
           <div
-            :style="`background: url(${userData.avatarUrl}) center / cover`"
+            :style="`background: url(${avatarUrl}) center / cover`"
             class="profile-title-img"
           />
           <div class="profile-title mx-auto">{{ userData.name }}</div>
@@ -30,9 +30,39 @@
             <v-list-item-title class="subtitle-2 font-weight-bold"> Profile </v-list-item-title>
           </v-list-item>
 
-          <v-list-item @click="logout" link>
-            <v-icon class="mr-3">exit_to_app</v-icon>
-            <v-list-item-title class="subtitle-2 font-weight-bold"> Exit </v-list-item-title>
+          <v-list-item @click.stop="onOpenExitConfirm" link>
+            <transition-card v-model="isOpenExitConfirm">
+              <template #activator>
+                <div class="d-flex">
+                  <v-icon class="mr-3">exit_to_app</v-icon>
+                  <v-list-item-title class="subtitle-2 font-weight-bold"> Exit </v-list-item-title>
+                </div>
+              </template>
+
+              <v-card min-width="200">
+                <v-card-title class="body-1">
+                  Are you sure you want to exit?
+                </v-card-title>
+                <v-card-actions class="d-flex justify-space-around">
+                  <v-btn
+                    class="mr-2"
+                    color="primary"
+                    text
+                    small
+                  >
+                    Cancel
+                  </v-btn>
+                  <v-btn
+                    color="red"
+                    text
+                    small
+                    @click="logout"
+                  >
+                    Exit
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </transition-card>
           </v-list-item>
         </v-list>
       </v-card>
@@ -44,7 +74,8 @@
 <script>
 import { LOGOUT } from '@/consts';
 import TransitionCard from './TransitionCard';
-import { USER_DATA } from '@/consts';
+import { USER_DATA, DOWNLOAD_MEDIA } from '@/consts';
+import urls from '@/api/urls';
 
 export default {
   components: {
@@ -53,11 +84,18 @@ export default {
   data() {
     return {
       isAvatarOpen: false,
+      isOpenExitConfirm: false,
     };
   },
   computed: {
     userData() {
       return this.$store.getters[USER_DATA];
+    },
+    avatarUrl() {
+      const userId = JSON.parse( localStorage.getItem('currentUserId') );
+      return this.userData.avatar
+      ? `${urls[DOWNLOAD_MEDIA]}avatars%2F${userId}%2F${this.userData.avatar.fileName}?alt=media&token=${this.userData.avatar.fileToken}`
+      : false;
     },
   },
   methods: {
@@ -69,6 +107,9 @@ export default {
     },
     toProfile() {
       this.$router.push({ name: 'profile' });
+    },
+    onOpenExitConfirm() {
+      this.isOpenExitConfirm = true;
     },
     logout() {
       this.$store.commit(LOGOUT);

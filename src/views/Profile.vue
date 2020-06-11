@@ -96,6 +96,14 @@
           reset
         </v-btn>
       </v-row>
+
+      <v-progress-linear
+        :active="form.loading"
+        indeterminate
+        absolute
+        bottom
+        color="deep-purple accent-4"
+      ></v-progress-linear>
     </form>
   </div>
 </template>
@@ -123,6 +131,7 @@ export default {
         countryInputLoading: false,
         countryInputTimer: () => {},
         errors: '',
+        loading: false,
       },
     };
   },
@@ -197,13 +206,16 @@ export default {
       this.onSelectCountry(fullCountryName || this.userData.country || '');
     },
     onSubmit() {
+      this.form.loading = true;
+
       this.form.errors = '';
-      const body = {};
+      const body = { ...this.userData };
       this.formFields.forEach(key => body[key] = this.form[key]);
 
       this.updateUserData({ body })
       .then(() => this.$notification({ text: 'Your data has been updated successfully !' }))
       .catch(e => this.form.errors = this.getServerErrors(e))
+      .finally(() => this.form.loading = false);
     },
     formReset() {
       this.formFields.forEach(key => this.form[key] = this.userData[key] || '');
@@ -227,6 +239,7 @@ export default {
   box-shadow: 0 4px 25px 0 rgba(0, 0, 0, .2);
   padding: 30px;
   max-width: 800px;
+  position: relative;
 }
 @media(max-width: 450px)  {
   .profile-wrapper {

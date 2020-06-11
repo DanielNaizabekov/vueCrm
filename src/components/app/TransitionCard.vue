@@ -88,6 +88,7 @@ export default {
   display: inline-flex;
   justify-content: center;
   position: relative;
+  z-index: 100;
 }
 
 .inner {
