@@ -1,5 +1,6 @@
 import { HTTP_GET, HTTP_PUT, COUNTRIES, UPDATE_USER_DATA, USER_DATA } from '@/consts';
 import urls from '@/api/urls';
+import axios from 'axios';
 
 const state = {
   userData: {},
@@ -16,9 +17,8 @@ const actions = {
     return dispatch(HTTP_GET, { method: USER_DATA });
   },
   [COUNTRIES]({ commit }, params) {
-    return fetch(urls[COUNTRIES] + params)
-    .then(response => response.json())
-    .then(response => commit(COUNTRIES, response));
+    return axios.get(urls[COUNTRIES] + params)
+    .then(({ data }) => commit(COUNTRIES, data))
   },
   [UPDATE_USER_DATA]({ dispatch }, { body }) {
     return dispatch(HTTP_PUT, { method: USER_DATA, body, mutation: false })

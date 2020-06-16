@@ -2,7 +2,7 @@
   <div ref="wrapper" class="wrapper">
     <slot name="activator"></slot>
     
-    <transition tag="div">
+    <transition @afterEnter="afterEnter" @afterLeave="afterLeave" tag="div">
       <div v-show="isOpen" ref="inner" class="inner">
         <slot></slot>
       </div>
@@ -27,6 +27,7 @@ export default {
         this.onOpen();
         this.documentBody.addEventListener('click', this.closeHandler);
       } else {
+        this.isOpen = false;
         this.documentBody.removeEventListener('click', this.closeHandler);
       }
     },
@@ -35,11 +36,18 @@ export default {
     },
   },
   methods: {
+    afterEnter() {
+      this.$emit('afterEnter');
+    },
+    afterLeave() {
+      this.$emit('afterLeave');
+    },
     getPositions(inner, wrapper) {
       const wrapperOffsetLeft = wrapper.getBoundingClientRect().left;
       const wrapperOffsetRight = wrapper.getBoundingClientRect().right;
       const innerOffsetLeft = inner.getBoundingClientRect().left;
-      const innerOffsetRight = inner.getBoundingClientRect().right;
+      // const innerOffsetRight = inner.getBoundingClientRect().right;
+      const innerOffsetRight = wrapperOffsetLeft + inner.offsetLeft + inner.offsetWidth;
       const innerOffsetBottom = inner.getBoundingClientRect().bottom;
       const windowWidth = document.documentElement.clientWidth;
       const windowHeight = window.innerHeight;
@@ -78,7 +86,13 @@ export default {
   },
   mounted() {
     this.documentBody = document.querySelector('body');
-    this.closeHandler = () => this.isOpen = false;
+    this.closeHandler = () => {
+      this.isOpen = false;
+      this.$emit('onClose');
+    };
+  },
+  beforeDestroy() {
+    this.documentBody.removeEventListener('click', this.closeHandler);
   },
 }
 </script>
@@ -88,13 +102,13 @@ export default {
   display: inline-flex;
   justify-content: center;
   position: relative;
-  z-index: 100;
 }
 
 .inner {
   padding: 5px;
   min-width: 80px;
   position: absolute;
+  z-index: 100;
 }
 
 .v-enter-active, .v-leave-active {

@@ -30,10 +30,10 @@
             <v-list-item-title class="subtitle-2 font-weight-bold"> Profile </v-list-item-title>
           </v-list-item>
 
-          <v-list-item @click.stop="onOpenExitConfirm" link>
-            <transition-card v-model="isOpenExitConfirm">
+          <v-list-item link>
+            <transition-card class="exit-confirm-wrapper" v-model="isExitConfirmOpen">
               <template #activator>
-                <div class="d-flex">
+                <div @click.stop="onExitConfirmOpen" class="exit-confirm-activator d-flex">
                   <v-icon class="mr-3">exit_to_app</v-icon>
                   <v-list-item-title class="subtitle-2 font-weight-bold"> Exit </v-list-item-title>
                 </div>
@@ -84,7 +84,7 @@ export default {
   data() {
     return {
       isAvatarOpen: false,
-      isOpenExitConfirm: false,
+      isExitConfirmOpen: false,
     };
   },
   computed: {
@@ -108,8 +108,8 @@ export default {
     toProfile() {
       this.$router.push({ name: 'profile' });
     },
-    onOpenExitConfirm() {
-      this.isOpenExitConfirm = true;
+    onExitConfirmOpen() {
+      this.isExitConfirmOpen = true;
     },
     logout() {
       this.$store.commit(LOGOUT);
@@ -138,5 +138,10 @@ export default {
   position: relative;
   z-index: 5;
   text-shadow: 0px 0px 8px #fff;
+}
+.exit-confirm-wrapper,
+.exit-confirm-activator {
+  width: 100%;
+  height: 100%;
 }
 </style>

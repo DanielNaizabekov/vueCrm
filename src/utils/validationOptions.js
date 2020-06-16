@@ -111,8 +111,28 @@ export const profileValidations = {
     path: 'form.country',
     methods: ['isString'],
     hints: {
-      isString: 'Requires string',
+      isString: 'String required',
+    },
+  },
+  bill: {
+    path: 'form.bill',
+    methods: ['numeric'],
+    hints: {
+      numeric: 'Number required',
     },
   },
 };
 // ==== profile page validation options ====
+
+
+// ==== planning page validation options ====
+export const planningValidations = {
+  limit: {
+    path: 'limit',
+    methods: ['numeric'],
+    hints: {
+      numeric: 'Number required',
+    },
+  },
+};
+// ==== planning page validation options ====

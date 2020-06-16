@@ -1,7 +1,16 @@
 <template>
   <div class="d-flex align-center">
     <v-avatar tile class="mr-7" color="indigo" min-height="84" min-width="84">
-      <overlay v-if="avatarLoading">
+      <overlay v-if="changeAvatarLoading">
+        <v-progress-circular
+          :value="uploadProgress"
+          size="50"
+          width="3"
+          color="#fff">
+          {{ uploadProgress }}
+        </v-progress-circular>
+      </overlay>
+      <overlay v-if="removeAvatarLoading">
         <v-progress-circular indeterminate color="#fff"/>
       </overlay>
       <img class="profile-avatar" v-if="avatarUrl" :src="avatarUrl" alt="avatar"/>
@@ -60,7 +69,7 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex';
+import { mapGetters, mapActions, mapMutations } from 'vuex';
 import { USER_DATA, UPLOAD_MEDIA, DOWNLOAD_MEDIA, DELETE_MEDIA, UPDATE_USER_DATA } from '@/consts';
 import urls from '@/api/urls';
 import TransitionCard from './app/TransitionCard';
@@ -69,13 +78,15 @@ export default {
   components: { TransitionCard },
   data() {
     return {
-      avatarLoading: false,
+      changeAvatarLoading: false,
+      removeAvatarLoading: false,
       isOpenRemoveConfirm: false,
     };
   },
   computed: {
     ...mapGetters({
       userData: USER_DATA,
+      uploadProgress: 'getUploadProgress',
     }),
     avatarUrl() {
       const userId = JSON.parse( localStorage.getItem('currentUserId') );
@@ -90,6 +101,9 @@ export default {
       deleteMedia: DELETE_MEDIA,
       updateUserData: UPDATE_USER_DATA,
     }),
+    ...mapMutations({
+      resetUploadProgress: UPLOAD_MEDIA,
+    }),
     openFilesWindow() {
       this.$refs.changeAvatar.click();
     },
@@ -99,30 +113,33 @@ export default {
     },
     selectAvatar(event) {
       if (!event.target.files[0]) return;
-      this.avatarLoading = true;
+      this.changeAvatarLoading = true;
 
       const file = event.target.files[0];
       this.uploadMedia({ path: this.buildAvatarStoragePath(file.name), file })
-      .then(response => {
+      .then(({ data }) => {
         const body = {
           ...this.userData,
           avatar: {
             fileName: file.name,
-            fileToken: response.downloadTokens,
+            fileToken: data.downloadTokens,
           },
         };
         return this.updateUserData({ body });
       })
       .then(() => this.$notification({ text: 'Avatar updated successfully', color: 'blue-grey lighten-1' }))
       .catch(() => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }))
-      .finally(() => this.avatarLoading = false);
+      .finally(() => {
+        this.changeAvatarLoading = false;
+        this.resetUploadProgress(0);
+      });
     },
     onOpenRemoveConfirm() {
       if (!this.userData.avatar) return;
       this.isOpenRemoveConfirm = true;
     },
     removeAvatar() {
-      this.avatarLoading = true;
+      this.removeAvatarLoading = true;
 
       this.deleteMedia({ path: this.buildAvatarStoragePath(this.userData.avatar.fileName) })
       .then(() => {
@@ -131,7 +148,7 @@ export default {
         return this.updateUserData({ body: {...userData} });
       })
       .catch(() => this.$notification({ text: 'Avatar removing failed', color: 'red lighten-2' }))
-      .finally(() => this.avatarLoading = false);
+      .finally(() => this.removeAvatarLoading = false);
     },
   },
 }

@@ -9,11 +9,12 @@ export default new Router({
     {
       path: '/',
       component: () => import('../components/app/Layout'),
+      redirect: { name: 'planning' },
       children: [
         {
-          path: '',
-          name: 'spending',
-          component: () => import('../views/Spending'),
+          path: 'planning/',
+          name: 'planning',
+          component: () => import('../views/Planning'),
         },
         {
           path: 'currency/',
@@ -23,6 +24,7 @@ export default new Router({
         {
           path: 'profile/',
           name: 'profile',
+          meta: { back: true },
           component: () => import('../views/Profile'),
         },
       ],

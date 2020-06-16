@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-catch */
-import { HTTP_POST_AUTH, HTTP_GET, HTTP_POST, HTTP_PUT } from '../consts';
+import { HTTP_POST_AUTH, HTTP_GET, HTTP_POST, HTTP_PUT, HTTP_DELETE } from '../consts';
 import axios, { axiosAuth, firebaseConfig } from '../api';
 import urls from '../api/urls';
 
@@ -59,6 +59,18 @@ const actions = {
 
     try {
       let { data } = await axios.put(wrapUrl(method, params), body || {});
+      mutation = mutation || mutation === false ? mutation : method;
+      mutation && commit(mutation, data);
+      return data;
+    } catch(e) {
+      throw e;
+    }
+  },
+  async [HTTP_DELETE]({ commit }, { method, params = {}, mutation }) {
+    params.userId = JSON.parse( localStorage.getItem('currentUserId') );
+
+    try {
+      let { data } = await axios.delete(wrapUrl(method, params));
       mutation = mutation || mutation === false ? mutation : method;
       mutation && commit(mutation, data);
       return data;

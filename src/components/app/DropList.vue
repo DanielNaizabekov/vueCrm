@@ -58,6 +58,9 @@ export default {
       this.$emit('onClose');
     };
   },
+  beforeDestroy() {
+    this.documentBody.removeEventListener('click', this.closeHandler);
+  },
 }
 </script>
 

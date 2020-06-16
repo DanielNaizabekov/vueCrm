@@ -1,6 +1,5 @@
 <template>
-  <div class="profile-wrapper">
-    
+  <Card class="profile-page">
     <ProfileAvatar/>
 
     <form @submit.prevent="onSubmit" class="mt-7">
@@ -27,6 +26,8 @@
           label="Bill"
           outlined
           dense
+          :error-messages="getValidationErrors(profileValidations.bill)"
+          prefix="₽"
           v-model="form.bill"
         />
 
@@ -105,19 +106,21 @@
         color="deep-purple accent-4"
       ></v-progress-linear>
     </form>
-  </div>
+  </Card>
 </template>
 
 <script>
 import { mapGetters, mapActions, mapMutations } from 'vuex';
 import ProfileAvatar from '@/components/ProfileAvatar';
 import DropList from '@/components/app/DropList';
+import Card from '@/components/app/Card';
+import { numeric } from 'vuelidate/lib/validators';
 import prepareErrors from '@/mixins/prepareErrors.mixin.js';
 import { profileValidations } from '@/utils/validationOptions';
 import { COUNTRIES, USER_DATA, UPDATE_USER_DATA } from '@/consts';
 
 export default {
-  components: { ProfileAvatar, DropList },
+  components: { ProfileAvatar, DropList, Card },
   data() {
     return {
       profileValidations,
@@ -137,6 +140,7 @@ export default {
   },
   validations: {
     form: {
+      bill: { numeric },
       country: {
         isString: val => {
           let hasNumber = val.split('').find(sym => !isNaN(sym) && sym !== ' ');
@@ -206,6 +210,7 @@ export default {
       this.onSelectCountry(fullCountryName || this.userData.country || '');
     },
     onSubmit() {
+      if(this.$v.form.$invalid) return this.$v.form.$touch();
       this.form.loading = true;
 
       this.form.errors = '';
@@ -234,17 +239,9 @@ export default {
 </script>
 
 <style scoped>
-.profile-wrapper {
-  border-radius: 7px;
-  box-shadow: 0 4px 25px 0 rgba(0, 0, 0, .2);
-  padding: 30px;
+.profile-page {
   max-width: 800px;
   position: relative;
-}
-@media(max-width: 450px)  {
-  .profile-wrapper {
-    padding: 15px;
-  }
 }
 
 .country-input-wrapper {
