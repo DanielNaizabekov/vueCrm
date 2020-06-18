@@ -23,6 +23,8 @@
         <v-icon>add</v-icon>
       </div>
     </div>
+
+    <router-view/>
   </Card>
 </template>
 

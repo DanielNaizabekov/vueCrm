@@ -1,0 +1,234 @@
+<template>
+  <overlay class="planning-task-page">
+    <v-card width="700" class="pa-3">
+      <v-row class="ma-0 mb-3 align-center">
+        <p class="planning-task-id ma-0">{{ params.taskId }}</p>
+
+        <v-spacer/>
+
+        <v-btn
+          @click="copyLink"
+          icon
+          color="#42526E"
+          class="ml-2"
+        >
+          <v-icon>content_copy</v-icon>
+        </v-btn>
+
+        <TransitionCard v-model="isOpenDeleteConfirm">
+          <template #activator>
+            <v-btn
+              @click.stop="onOpenDeleteConfirm"
+              icon
+              color="#42526E"
+              class="ml-2"
+            >
+              <v-icon>delete_forever</v-icon>
+            </v-btn>
+          </template>
+          
+          <v-card min-width="200">
+            <v-card-title class="body-1">
+              Are you sure you want to delete?
+            </v-card-title>
+            <v-card-actions class="d-flex justify-space-around">
+              <v-btn
+                class="mr-2"
+                color="primary"
+                text
+                small
+              >
+                Cancel
+              </v-btn>
+              <v-btn
+                color="red"
+                text
+                small
+                @click="onDeleteTask"
+              >
+                Delete
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </TransitionCard>
+
+        <v-btn
+          @click="closeTask"
+          icon
+          color="#42526E"
+          class="ml-2"
+        >
+          <v-icon>close</v-icon>
+        </v-btn>
+      </v-row>
+      <div class="d-flex flex-wrap">
+        <div class="col-12 col-sm mb-5 mb-sm-0 pa-0 mr-5">
+          <PlanningBoardInput
+            v-model="isOpenTitleInput"
+            class="planning-task-title-input"
+            :inputValueProp="task.title"
+            @submit="changeTitle"
+          />
+          <div
+            v-if="!isOpenTitleInput"
+            class="planning-task-title-btn"
+            @click.stop="onOpenTitleInput"
+          >
+            {{ task.title }}
+          </div>
+
+          <div>
+            <v-textarea class="mt-3" solo label="Description"/>
+            <div class="d-flex mt-n4">
+              <v-spacer/>
+              <v-btn class="text-capitalize mr-2" outlined>cancel</v-btn>
+              <v-btn class="text-capitalize" color="primary">save</v-btn>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-4 col-4 pa-0 d-flex flex-column">
+          <div class="mb-2">
+            <div>
+              <v-chip close class="mb-2" label>
+                <p class="text-truncate ma-0">https://youtube.com</p>
+              </v-chip>
+              <v-chip close class="mb-2" label>
+                <p class="text-truncate ma-0">https://youtube.com</p>
+              </v-chip>
+            </div>
+            <PlanningBoardInput
+              v-model="isOpenLinkInput"
+              class="planning-task-title-input"
+            />
+            <v-btn
+              v-if="!isOpenLinkInput"
+              class="text-capitalize"
+              depressed
+              tile
+              color="#ECEDF0"
+              @click.stop="onOpenLinkInput"
+            >
+              <v-icon left>create</v-icon> Add link
+            </v-btn>
+          </div>
+          
+          <v-divider class="mb-1 mt-auto"/>
+          <p class="caption text-right ma-0">Created yesterday</p>
+        </div>
+      </div>
+
+      <v-progress-linear
+        :active="loading"
+        indeterminate
+        absolute
+        bottom
+        color="deep-purple accent-4"
+      ></v-progress-linear>
+    </v-card>
+  </overlay>
+</template>
+
+<script>
+import { mapGetters, mapActions } from 'vuex';
+import { GET_TASK, DELETE_TASK, CHANGE_TASK } from '@/consts';
+import PlanningBoardInput from '@/components/PlanningBoardInput';
+import TransitionCard from '@/components/app/TransitionCard';
+
+export default {
+  components: { PlanningBoardInput, TransitionCard },
+  data() {
+    return {
+      isOpenTitleInput: false,
+      isOpenLinkInput: false,
+      isOpenDeleteConfirm: false,
+      loading: false,
+      params: {},
+    };
+  },
+  computed: {
+    ...mapGetters({
+      task: GET_TASK,
+    }),
+  },
+  methods: {
+    ...mapActions({
+      getTask: GET_TASK,
+      deleteTask: DELETE_TASK,
+      changeTask: CHANGE_TASK,
+    }),
+    onOpenTitleInput() {
+      this.isOpenTitleInput = true;
+    },
+    onOpenLinkInput() {
+      this.isOpenLinkInput = true;
+    },
+    copyLink() {
+      this.$notification({ text: 'Link copied' });
+    },
+    onOpenDeleteConfirm() {
+      this.isOpenDeleteConfirm = true;
+    },
+    onDeleteTask() {
+      this.loading = true;
+
+      this.deleteTask({ params: this.params })
+      .then( () => {
+        this.$notification({ text: 'Task deleted successfully' });
+        this.closeTask();
+      })
+      .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) )
+      .finally(() => this.loading = false);
+    },
+    closeTask() {
+      this.$router.go(-1);
+    },
+    changeTitle(value) {
+      this.loading = true;
+
+      const body = { ...this.task, title: value };
+      this.changeTask({ params: this.params, body })
+      .then(() => this.getTask({ params: this.params }))
+      .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) )
+      .finally(() => this.loading = false);
+    },
+  },
+  mounted() {
+    this.params = {
+      categoryId: this.$route.params.categoryId,
+      taskId: this.$route.params.taskId,
+    };
+    this.getTask({ params: this.params })
+    .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) );
+  },
+}
+</script>
+
+<style scoped>
+.planning-task-page {
+  align-items: flex-start;
+  padding: 5% 10px 15px 10px;
+  z-index: 2;
+  animation: fade .3s;
+}
+@keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.planning-task-title-btn {
+  border-radius: 5px;
+  height: 40px;
+  padding: 0 10px;
+  font-size: 18px;
+  color: #172B4D;
+  transition: background .2s;
+  line-height: 40px;
+}
+.planning-task-title-btn:hover {
+  background: #EBECF0;
+}
+</style>

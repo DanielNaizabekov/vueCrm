@@ -129,8 +129,9 @@ export const profileValidations = {
 export const planningValidations = {
   limit: {
     path: 'limit',
-    methods: ['numeric'],
+    methods: ['required', 'numeric'],
     hints: {
+      required: 'Should not be empty',
       numeric: 'Number required',
     },
   },

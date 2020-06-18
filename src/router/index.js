@@ -15,6 +15,13 @@ export default new Router({
           path: 'planning/',
           name: 'planning',
           component: () => import('../views/Planning'),
+          children: [
+            {
+              path: ':categoryId/task/:taskId',
+              name: 'planningTask',
+              component: () => import('../views/PlanningTask'),
+            }
+          ],
         },
         {
           path: 'currency/',

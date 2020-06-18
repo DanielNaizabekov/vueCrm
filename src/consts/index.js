@@ -16,6 +16,11 @@ export const GET_CATEGORIES = 'GET_CATEGORIES';
 export const CREATE_CATEGORY = 'CREATE_CATEGORY';
 export const CHANGE_CATEGORY = 'CHANGE_CATEGORY';
 export const DELETE_CATEGORY = 'DELETE_CATEGORY';
+export const CREATE_TASK = 'CREATE_TASK';
+export const TASK = 'TASK';
+export const GET_TASK = 'GET_TASK';
+export const DELETE_TASK = 'DELETE_TASK';
+export const CHANGE_TASK = 'CHANGE_TASK';
 
 // requests
 export const HTTP_POST_AUTH = 'HTTP_POST_AUTH';

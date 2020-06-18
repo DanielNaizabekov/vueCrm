@@ -2,7 +2,7 @@
   <div class="board">
     <header class="board-header d-flex justify-space-between align-center">
       <PlanningBoardInput
-        @submit="changeTaskTitle" 
+        @submit="changeCategoryTitle" 
         v-model="isOpenHeaderInput"
         :inputValueProp="category.title"
       />
@@ -17,7 +17,7 @@
       <div class="board-header-counter" :class="{hide: isOpenHeaderInput}">{{ category.tasks.length }}</div>
 
       <v-progress-circular
-        v-if="changeTaskLoading"
+        v-if="changeCategoryLoading"
         size="25"
         width="3"
         color="#42526E"
@@ -50,14 +50,16 @@
 
     <section class="board-content">
       <PlanningBoardTask
-        v-for="item in category.task"
+        v-for="item in category.tasks"
         :key="item.id"
         :task="item"
+        :categoryId="category.id"
       />
     </section>
 
     <footer class="board-footer">
-      <button class="board-btn board-footer-btn">
+      <PlanningBoardInput @submit="onCreateTask" v-model="isOpenCreateTaskInput"/>
+      <button v-if="!isOpenCreateTaskInput" @click.stop="onOpenCreateTaskInput" class="board-btn board-footer-btn">
         <v-icon class="board-footer-btn-icon">add</v-icon>
         <span>Create task</span>
       </button>
@@ -102,10 +104,10 @@ import TransitionCard from '@/components/app/TransitionCard';
 import PlanningBoardTask from '@/components/PlanningBoardTask';
 import PlanningBoardInput from '@/components/PlanningBoardInput';
 import { mapActions } from 'vuex';
-import { CHANGE_CATEGORY, DELETE_CATEGORY } from '@/consts';
+import { CHANGE_CATEGORY, DELETE_CATEGORY, CREATE_TASK } from '@/consts';
 import prepareErrors from '@/mixins/prepareErrors.mixin.js';
 import { planningValidations } from '@/utils/validationOptions';
-import { numeric } from 'vuelidate/lib/validators';
+import { required, numeric } from 'vuelidate/lib/validators';
 
 export default {
   components: { TransitionCard, PlanningBoardTask, PlanningBoardInput },
@@ -120,7 +122,8 @@ export default {
       isOpenHeaderInput: false,
       isPersistentHeaderMore: false,
       isOpenHeaderMoreMenu: false,
-      changeTaskLoading: false,
+      changeCategoryLoading: false,
+      isOpenCreateTaskInput: false,
       isOpenSetLimitModal: false,
       setLimitModalLoading: false,
       limit: '',
@@ -128,13 +131,14 @@ export default {
     };
   },
   validations: {
-    limit: { numeric },
+    limit: { required, numeric },
   },
   mixins: [prepareErrors],
   methods: {
     ...mapActions({
       changeCategory: CHANGE_CATEGORY,
       deleteCategory: DELETE_CATEGORY,
+      createTask: CREATE_TASK,
     }),
     openHeaderInput() {
       this.isOpenHeaderInput = true;
@@ -149,20 +153,20 @@ export default {
     onCloseHeaderMoreMenu() {
       this.isPersistentHeaderMore = false;
     },
-    changeTaskTitle(value) {
-      this.changeTaskLoading = true;
+    changeCategoryTitle(value) {
+      this.changeCategoryLoading = true;
       const body = {...this.category};
       body.title = value;
       this.changeCategory({ params: {id: this.category.id}, body })
       .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) )
-      .finally(() => this.changeTaskLoading = false);
+      .finally(() => this.changeCategoryLoading = false);
     },
     onDeleteCategory() {
-      this.changeTaskLoading = true;
+      this.changeCategoryLoading = true;
       this.deleteCategory({ params: {id: this.category.id} })
       .then( () => this.$notification({ text: 'Category deleted successfully' }) )
       .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) )
-      .finally(() => this.changeTaskLoading = false);
+      .finally(() => this.changeCategoryLoading = false);
     },
     onOpenSetLimitModal() {
       this.isOpenSetLimitModal = true;
@@ -171,7 +175,7 @@ export default {
       this.isOpenSetLimitModal = false;
     },
     onSetLimit() {
-      if(this.$v.$invalid) return this.$v.$touch();
+      if(this.$v.limit.$invalid) return this.$v.limit.$touch();
       this.setLimitModalLoading = true;
       
       const body = {...this.category};
@@ -184,13 +188,26 @@ export default {
       })
       .catch(e => this.setLimitErrors = this.getServerErrors(e))
       .finally(() => this.setLimitModalLoading = false);
-    }
+    },
+    onOpenCreateTaskInput() {
+      this.isOpenCreateTaskInput = true;
+    },
+    onCreateTask(value) {
+      this.changeCategoryLoading = true;
+      const body = { title: value };
+      this.createTask({ params: {categoryId: this.category.id}, body })
+      .then( () => this.$notification({ text: 'Task created successfully' }) )
+      .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) )
+      .finally(() => this.changeCategoryLoading = false);
+    },
   },
 }
 </script>
 
 <style scoped>
 .board {
+  display: flex;
+  flex-direction: column;
   flex: 1 0 210px;
   max-width: 270px;
   padding: 5px;
@@ -289,6 +306,9 @@ export default {
   margin-top: 7px;
 }
 
+.board-footer {
+  margin-top: auto;
+}
 .board-footer-btn {
   width: 100%;
   color: #42526E;

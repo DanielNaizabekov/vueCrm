@@ -1,13 +1,24 @@
 <template>
-  <div class="board-task">
+  <div @click="taskDetail" class="board-task">
     <div class="board-task-title d-flex align-center justify-space-between">
       <span>{{ task.title }}</span>
+      
+      <v-progress-circular
+        v-if="taskChangeLoading"
+        size="22"
+        width="3"
+        color="#42526E"
+        indeterminate
+        class="my-2"
+      />
+
       <div
+        v-else
         class="board-more-wrapper board-task-more-wrapper align-self-start"
         :class="{show: isPersistentTaskMore}"
       >
         <transition-card
-          @afterLeave="onCloseTaskMoreMenu"
+          @afterLeave="destroyPersisntent"
           v-model="isOpenTaskMoreMenu"
         >
           <template #activator>
@@ -18,8 +29,8 @@
 
           <v-card min-width="150">
             <ul class="board-more-list">
-              <li class="board-more-item">Delete</li>
-              <li class="board-more-item">Set limit</li>
+              <li @click.stop="onDeleteTask" class="board-more-item">Delete</li>
+              <li @click.stop="onCloseTaskMoreMenu" class="board-more-item">Copy link</li>
             </ul>
           </v-card>
         </transition-card>
@@ -30,6 +41,8 @@
 
 <script>
 import TransitionCard from '@/components/app/TransitionCard';
+import { mapActions } from 'vuex';
+import { DELETE_TASK } from '@/consts';
 
 export default {
   components: { TransitionCard },
@@ -37,20 +50,49 @@ export default {
     task: {
       type: Object,
     },
+    categoryId: {
+      type: String,
+    },
   },
   data() {
     return {
       isPersistentTaskMore: false,
       isOpenTaskMoreMenu: false,
+      taskChangeLoading: false,
     };
   },
   methods: {
+    ...mapActions({
+      deleteTask: DELETE_TASK,
+    }),
     onOpenTaskMoreMenu() {
       this.isOpenTaskMoreMenu = true;
       this.isPersistentTaskMore = true;
     },
     onCloseTaskMoreMenu() {
+      this.isOpenTaskMoreMenu = false;
+    },
+    destroyPersisntent() {
       this.isPersistentTaskMore = false;
+    },
+    onDeleteTask() {
+      this.taskChangeLoading = true;
+      const params = {
+        categoryId: this.categoryId,
+        taskId: this.task.id,
+      };
+      this.deleteTask({ params })
+      .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) )
+      .finally(() => this.taskChangeLoading = true);
+    },
+    taskDetail() {
+      this.$router.push({
+        name: 'planningTask',
+        params: {
+          categoryId: this.categoryId,
+          taskId: this.task.id,
+        },
+      });
     },
   },
 }

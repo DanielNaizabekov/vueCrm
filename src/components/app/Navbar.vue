@@ -1,9 +1,25 @@
 <template>
   <v-app-bar dark app>
-    <v-app-bar-nav-icon @click.stop="toggleSidebar"></v-app-bar-nav-icon>
+    <v-app-bar-nav-icon @click.stop="toggleSidebar"/>
     <v-toolbar-title>Application</v-toolbar-title>
 
-    <v-spacer></v-spacer>
+    <v-spacer/>
+
+    <v-tooltip left>
+      <template #activator="{ on }">
+        <v-btn
+          href="https://github.com/DanielNaizabekov/vueCrm"
+          icon
+          large
+          target="_blank"
+          v-on="on"
+          class="mr-2"
+        >
+          <v-icon>code</v-icon>
+        </v-btn>
+      </template>
+      <span>Source</span>
+    </v-tooltip>
 
     <transition-card v-model="isAvatarOpen">
       <template #activator>
@@ -67,7 +83,6 @@
         </v-list>
       </v-card>
     </transition-card>
-
   </v-app-bar>
 </template>
 

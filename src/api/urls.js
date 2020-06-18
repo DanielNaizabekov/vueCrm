@@ -11,6 +11,8 @@ import {
   CURRENCY_HISTORY,
   CATEGORIES,
   CHANGE_CATEGORY,
+  CREATE_TASK,
+  TASK,
 } from '../consts';
 
 export default {
@@ -26,4 +28,6 @@ export default {
   [CURRENCY_HISTORY]: 'https://api.exchangeratesapi.io/:date:?base=RUB&symbols=:rates:',
   [CATEGORIES]: 'users/:userId:/planning.json',
   [CHANGE_CATEGORY]: 'users/:userId:/planning/:id:.json',
+  [CREATE_TASK]: 'users/:userId:/planning/:categoryId:/tasks.json',
+  [TASK]: 'users/:userId:/planning/:categoryId:/tasks/:taskId:.json',
 };

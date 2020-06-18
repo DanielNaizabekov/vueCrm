@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div class="fill-height">
     <v-navigation-drawer v-model="drawer" app>
       <Sidebar />
     </v-navigation-drawer>
 
     <Navbar @toggleSidebar="toggleSidebar" />
 
-    <v-content>
+    <v-content class="fill-height">
       <div v-if="allowBackBtn" class="backspace-btn" @click="goBack">
         <v-icon x-large>keyboard_backspace</v-icon>
       </div>

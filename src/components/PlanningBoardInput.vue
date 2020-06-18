@@ -22,6 +22,7 @@ export default {
     },
     inputValueProp: {
       type: String,
+      default: '',
     },
   },
   data() {
@@ -66,6 +67,7 @@ export default {
   position: relative;
   z-index: 5;
   width: 100%;
+  height: 40px;
 }
 .board-input {
   font-size: 15px;
@@ -76,7 +78,7 @@ export default {
   outline: 0;
   padding: 0 8px;
   width: 100%;
-  height: 40px;
+  height: 100%;
 }
 .board-input-btns {
   position: absolute;
