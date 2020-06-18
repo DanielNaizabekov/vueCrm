@@ -25,18 +25,18 @@ export default {
   data() {
     return {
       isOpen: false,
-      text: 'Notification text',
-      color: 'blue-grey lighten-1',
-      timeout: 8000,
+      text: '',
+      color: '',
+      timeout: 0,
       closable: true,
     };
   },
   created() {
     bus.$on('openNotification', ({ text, color, timeout, closable }) => {
       this.isOpen = true;
-      text && (this.text = text);
-      color && (this.color = color);
-      timeout && (this.timeout = timeout);
+      this.text = text || 'Notification text';
+      this.color = color || 'blue-grey lighten-1';
+      this.timeout = timeout || 8000;
       (closable === false || closable === true) && (this.closable = closable);
     })
   },

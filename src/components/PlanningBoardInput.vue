@@ -45,6 +45,9 @@ export default {
     isOpen(v) {
       this.$emit('input', v);
     },
+    inputValueProp(v) {
+      this.inputValue = v;
+    },
   },
   methods: {
     onOpen() {

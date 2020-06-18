@@ -73,6 +73,7 @@ const mutations = {
     state.categotiesList = categotiesList;
   },
   [GET_TASK](state, data) {
+    data.links = data.links || [];
     state.task = data;
   },
 };

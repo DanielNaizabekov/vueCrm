@@ -1,26 +1,32 @@
 <template>
-  <Card class="planning-wrapper d-flex flex-wrap pr-4">
-    <PlanningBoard
-      v-for="item in categoriesList"
-      :key="item.id"
-      class="mr-3 mb-3"
-      :category="item"
-    />
-    <div class="planning-create-wrapper mr-3">
-      <PlanningBoardInput @submit="onCreateCategory" v-model="isOpenCreateInput"/>
-      <v-progress-circular
-        v-if="createCategoryLoading"
-        size="30"
-        width="3"
-        color="#42526E"
-        indeterminate
+  <Card class="pr-4">
+    <v-sheet v-if="pageLoading" color="grey lighten-4" class="pa-1">
+      <v-skeleton-loader type="article"/>
+    </v-sheet>
+
+    <div v-else class="planning-wrapper d-flex flex-wrap">
+      <PlanningBoard
+        v-for="item in categoriesList"
+        :key="item.id"
+        class="mr-3 mb-3"
+        :category="item"
       />
-      <div
-        v-else-if="!isOpenCreateInput"
-        @click.stop="onOpenCreateInput" 
-        class="planning-create"
-      >
-        <v-icon>add</v-icon>
+      <div class="planning-create-wrapper mr-3">
+        <PlanningBoardInput @submit="onCreateCategory" v-model="isOpenCreateInput"/>
+        <v-progress-circular
+          v-if="createCategoryLoading"
+          size="30"
+          width="3"
+          color="#42526E"
+          indeterminate
+        />
+        <div
+          v-else-if="!isOpenCreateInput"
+          @click.stop="onOpenCreateInput" 
+          class="planning-create"
+        >
+          <v-icon>add</v-icon>
+        </div>
       </div>
     </div>
 
@@ -39,6 +45,7 @@ export default {
   components: { Card, PlanningBoard, PlanningBoardInput },
   data() {
     return {
+      pageLoading: true,
       isOpenCreateInput: false,
       createCategoryLoading: false,
     };
@@ -67,7 +74,8 @@ export default {
   },
   mounted() {
     this.getCategories()
-    .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) );
+    .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) )
+    .finally(() => this.pageLoading = false);
   },
 }
 </script>
