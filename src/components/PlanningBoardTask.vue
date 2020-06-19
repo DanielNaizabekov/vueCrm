@@ -161,6 +161,7 @@ export default {
   box-shadow: rgba(23, 43, 77, 0.2) 0px 1px 1px, rgba(23, 43, 77, 0.2) 0px 0px 1px;
   transition: background .2s;
   margin-bottom: 5px;
+  cursor: pointer;
 }
 .board-task:hover {
   background: #F4F5F7;

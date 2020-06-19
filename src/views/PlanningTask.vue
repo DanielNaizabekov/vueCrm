@@ -79,7 +79,8 @@
             class="planning-task-title-btn"
             @click.stop="onOpenTitleInput"
           >
-            {{ task.title }}
+            <v-icon size="21" class="planning-task-title-icon">create</v-icon>
+            <span class="ml-2">{{ task.title }}</span>
           </div>
 
           <div>
@@ -181,7 +182,7 @@ export default {
       task: GET_TASK,
     }),
     isDescriptionChanged() {
-      let hasChanges = this.taskDescription !== this.task.description || '';
+      let hasChanges = this.taskDescription !== (this.task.description || '');
       return !hasChanges;
     },
   },
@@ -280,6 +281,9 @@ export default {
   padding: 5% 10px 15px 10px;
   z-index: 2;
   animation: fade .3s;
+  min-height: 100%;
+  bottom: auto;
+  overflow: hidden;
 }
 @keyframes fade {
   0% {
@@ -300,15 +304,19 @@ export default {
 }
 
 .planning-task-title-btn {
+  display: flex;
+  align-items: center;
   border-radius: 5px;
   height: 40px;
   padding: 0 10px;
   font-size: 18px;
   color: #172B4D;
   transition: background .2s;
-  line-height: 40px;
 }
 .planning-task-title-btn:hover {
   background: #EBECF0;
+}
+.planning-task-title-icon {
+  color: #172B4D;
 }
 </style>

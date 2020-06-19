@@ -11,7 +11,8 @@
         class="board-btn board-header-btn"
         @click.stop="openHeaderInput"
       >
-        {{ category.title }}
+        <v-icon size="15">create</v-icon>
+        <span class="ml-1">{{ category.title }}</span>
       </button>
 
       <div class="board-header-counter" :class="{hide: isOpenHeaderInput}">{{ category.tasks.length }}</div>
@@ -292,6 +293,8 @@ export default {
   color: #5E6C84;
   font-size: 12px;
   text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
 }
 
 .board-header-counter {
