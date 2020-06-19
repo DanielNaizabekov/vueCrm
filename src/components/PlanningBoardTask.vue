@@ -30,7 +30,7 @@
           <v-card min-width="150">
             <ul class="board-more-list">
               <li @click.stop="onDeleteTask" class="board-more-item">Delete</li>
-              <li @click.stop="onCloseTaskMoreMenu" class="board-more-item">Copy link</li>
+              <li @click.stop="copyLink" class="board-more-item">Copy link</li>
             </ul>
           </v-card>
         </transition-card>
@@ -93,6 +93,10 @@ export default {
           taskId: this.task.id,
         },
       });
+    },
+    copyLink() {
+      this.$notification({ text: 'Link copied' });
+      this.onCloseTaskMoreMenu();
     },
   },
 }

@@ -143,7 +143,7 @@
           </div>
           
           <v-divider class="mb-1 mt-auto"/>
-          <p class="caption text-right ma-0">Created yesterday</p>
+          <p class="caption text-right ma-0">Created {{ createdDate }}</p>
         </div>
       </div>
 
@@ -163,6 +163,7 @@ import { mapGetters, mapActions } from 'vuex';
 import { GET_TASK, DELETE_TASK, CHANGE_TASK } from '@/consts';
 import PlanningBoardInput from '@/components/PlanningBoardInput';
 import TransitionCard from '@/components/app/TransitionCard';
+import moment from 'moment';
 
 export default {
   components: { PlanningBoardInput, TransitionCard },
@@ -175,6 +176,7 @@ export default {
       isOpenDeleteConfirm: false,
       loading: false,
       taskDescription: '',
+      createdDate: '',
     };
   },
   computed: {
@@ -261,6 +263,17 @@ export default {
       .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) )
       .finally(() => this.loading = false);
     },
+    getCreatedDate() {
+      const ms = Math.abs( moment() - moment(this.task.date) );
+      const min = ms / 1000 / 60;
+      if(min * 60 < 60) {
+        this.createdDate = `${Math.floor(min * 60)} seconds ago`;
+        setTimeout(() => this.getCreatedDate(), 5000);
+      }
+      else if(min < 60) this.createdDate = `${Math.floor(min)} minutes ago`; 
+      else if(min / 60 < 24) this.createdDate = `${Math.floor(min / 60)} hours ago`;
+      else this.createdDate = `${Math.floor(min / 24)} days ago`;
+    },
   },
   mounted() {
     this.params = {
@@ -268,7 +281,10 @@ export default {
       taskId: this.$route.params.taskId,
     };
     this.getTask({ params: this.params })
-    .then(() => this.taskDescription = this.task.description || '')
+    .then(() => {
+      this.taskDescription = this.task.description || '';
+      this.getCreatedDate();
+    })
     .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) )
     .finally(() => this.pageLoading = false);
   },

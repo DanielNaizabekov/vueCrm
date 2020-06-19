@@ -109,6 +109,7 @@ import { CHANGE_CATEGORY, DELETE_CATEGORY, CREATE_TASK } from '@/consts';
 import prepareErrors from '@/mixins/prepareErrors.mixin.js';
 import { planningValidations } from '@/utils/validationOptions';
 import { required, numeric } from 'vuelidate/lib/validators';
+import moment from 'moment';
 
 export default {
   components: { TransitionCard, PlanningBoardTask, PlanningBoardInput },
@@ -195,7 +196,7 @@ export default {
     },
     onCreateTask(value) {
       this.changeCategoryLoading = true;
-      const body = { title: value };
+      const body = { title: value, date: moment().valueOf() };
       this.createTask({ params: {categoryId: this.category.id}, body })
       .then( () => this.$notification({ text: 'Task created successfully' }) )
       .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) )
