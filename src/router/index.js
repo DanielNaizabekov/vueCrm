@@ -14,6 +14,7 @@ export default new Router({
         {
           path: 'planning/',
           name: 'planning',
+          meta: { title: 'Planning' },
           component: () => import('../views/Planning'),
           children: [
             {
@@ -26,12 +27,13 @@ export default new Router({
         {
           path: 'currency/',
           name: 'currency',
+          meta: { title: 'Currency' },
           component: () => import('../views/Currency'),
         },
         {
           path: 'profile/',
           name: 'profile',
-          meta: { back: true },
+          meta: { title: 'Profile', back: true },
           component: () => import('../views/Profile'),
         },
       ],

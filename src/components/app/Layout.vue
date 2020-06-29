@@ -2,6 +2,14 @@
   <div class="fill-height">
     <v-navigation-drawer v-model="drawer" app>
       <Sidebar />
+      <template #append>
+        <v-footer padless>
+          <v-col class="copyright text-center">
+            <span>© 2020</span>
+            <a class="copyright-link" href="https://github.com/DanielNaizabekov" target="_blank">Profile on github</a>
+          </v-col>
+        </v-footer>
+      </template>
     </v-navigation-drawer>
 
     <Navbar @toggleSidebar="toggleSidebar" />
@@ -62,5 +70,16 @@ export default {
 }
 .backspace-btn:active {
   transform: translateX(-2px);
+}
+.copyright {
+  font-size: 12px;
+}
+.copyright-link {
+  margin-left: 5px;
+  color: #586069;
+  text-decoration: none;
+}
+.copyright-link:hover {
+  text-decoration: underline;
 }
 </style>

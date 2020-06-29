@@ -1,7 +1,7 @@
 <template>
   <v-app-bar dark app>
     <v-app-bar-nav-icon @click.stop="toggleSidebar"/>
-    <v-toolbar-title>Application</v-toolbar-title>
+    <v-toolbar-title>{{ pageTitle }}</v-toolbar-title>
 
     <v-spacer/>
 
@@ -103,6 +103,9 @@ export default {
     };
   },
   computed: {
+    pageTitle() {
+      return this.$route.meta.title;
+    },
     userData() {
       return this.$store.getters[USER_DATA];
     },
