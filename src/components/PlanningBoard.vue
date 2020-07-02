@@ -290,6 +290,12 @@ export default {
   }
 }
 
+.board-header {
+  cursor: grab;
+}
+.board-header:active {
+  cursor: grabbing;
+}
 .board-header-btn {
   color: #5E6C84;
   font-size: 12px;

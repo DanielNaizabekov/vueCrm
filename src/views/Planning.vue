@@ -5,12 +5,22 @@
     </v-sheet>
 
     <div v-else class="planning-wrapper d-flex flex-wrap">
-      <PlanningBoard
-        v-for="item in categoriesList"
-        :key="item.id"
-        class="mr-3 mb-3"
-        :category="item"
-      />
+      <draggable
+        class="planning-board-drag-wrapper"
+        handle=".board-header"
+        ghost-class="ghost-class"
+        animation="300"
+        @change="changeBoardPlace"
+        v-model="categoriesList"
+      >
+        <PlanningBoard
+          v-for="item in categoriesList"
+          :key="item.id"
+          class="mr-3 mb-3"
+          :category="item"
+        />
+      </draggable>
+      
       <div class="planning-create-wrapper mr-3">
         <PlanningBoardInput @submit="onCreateCategory" v-model="isOpenCreateInput"/>
         <v-progress-circular
@@ -39,25 +49,33 @@ import { mapGetters, mapActions } from 'vuex';
 import Card from '@/components/app/Card';
 import PlanningBoard from '@/components/PlanningBoard';
 import PlanningBoardInput from '@/components/PlanningBoardInput';
-import { GET_CATEGORIES, CREATE_CATEGORY } from '@/consts';
+import { GET_CATEGORIES, CHANGE_CATEGORIES_LIST, CREATE_CATEGORY } from '@/consts';
+import draggable from 'vuedraggable';
 
 export default {
-  components: { Card, PlanningBoard, PlanningBoardInput },
+  components: { Card, PlanningBoard, PlanningBoardInput, draggable },
   data() {
     return {
       pageLoading: true,
       isOpenCreateInput: false,
       createCategoryLoading: false,
+      categoriesList: [],
     };
   },
   computed: {
     ...mapGetters({
-      categoriesList: GET_CATEGORIES,
+      categoriesListStore: GET_CATEGORIES,
     }),
+  },
+  watch: {
+    categoriesListStore(v) {
+      this.categoriesList = v;
+    },
   },
   methods: {
     ...mapActions({
       getCategories: GET_CATEGORIES,
+      changeCategoriesList: CHANGE_CATEGORIES_LIST,
       createCategory: CREATE_CATEGORY,
     }),
     onOpenCreateInput() {
@@ -65,11 +83,39 @@ export default {
     },
     onCreateCategory(value) {
       this.createCategoryLoading = true;
-      const body = { title: value };
+      const body = { title: value, weight: Date.now().toString() };
       this.createCategory({ body })
       .then( () => this.$notification({ text: 'Category created successfully' }) )
       .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) )
       .finally(() => this.createCategoryLoading = false);
+    },
+    changeBoardPlace() {
+      let oldList = this.categoriesListStore.map(item => item.weight);
+      let newList = this.categoriesList.map(item => item.weight);
+
+      let changedCat = null;
+      oldList.forEach((item, i) => {
+        if(item !== newList[i]) {
+          changedCat = item;
+        }
+      });
+
+      let oldIndex = oldList.indexOf(changedCat);
+      let newIndex = newList.indexOf(changedCat);
+      let oldItem = {...this.categoriesListStore[oldIndex]};
+      let newItem = {...this.categoriesListStore[newIndex]};
+
+      this.categoriesListStore[oldIndex].weight = newItem.weight;
+      this.categoriesListStore[newIndex].weight = oldItem.weight;
+      // console.log(oldIndex)
+      // console.log(newIndex)
+      // console.log(oldItem)
+      // console.log(newItem)
+
+      const body = {}
+      this.categoriesListStore.forEach(item => body[item.id] = item);
+
+      this.changeCategoriesList({body});
     },
   },
   mounted() {
@@ -81,6 +127,12 @@ export default {
 </script>
 
 <style scoped>
+.planning-board-drag-wrapper {
+  display: contents;
+}
+.ghost-class {
+  background: #e1e5ee;
+}
 .planning-create-wrapper {
   height: 40px;
 }

@@ -5,6 +5,7 @@ import {
   HTTP_DELETE,
   CATEGORIES,
   GET_CATEGORIES,
+  CHANGE_CATEGORIES_LIST,
   CREATE_CATEGORY,
   CHANGE_CATEGORY,
   DELETE_CATEGORY,
@@ -28,6 +29,10 @@ const getters = {
 const actions = {
   [GET_CATEGORIES]({ dispatch }) {
     return dispatch(HTTP_GET, { method: CATEGORIES, mutation: GET_CATEGORIES });
+  },
+  [CHANGE_CATEGORIES_LIST]({ dispatch }, { body }) {
+    return dispatch(HTTP_PUT, { method: CATEGORIES, body, mutation: false })
+    .then(() => dispatch(GET_CATEGORIES));
   },
   [CREATE_CATEGORY]({ dispatch }, { body }) {
     return dispatch(HTTP_POST, { method: CATEGORIES, body, mutation: false })
@@ -70,6 +75,7 @@ const mutations = {
       : [];
     });
 
+    categotiesList.sort((next, prev) => next.weight < prev.weight ? -1 : 0);
     state.categotiesList = categotiesList;
   },
   [GET_TASK](state, data) {

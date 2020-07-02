@@ -88,6 +88,7 @@ export default {
   bottom: -32px;
   right: 0;
   display: flex;
+  cursor: default;
 }
 .board-input-btn {
   width: 32px;
