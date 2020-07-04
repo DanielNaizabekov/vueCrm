@@ -85,8 +85,27 @@ const mutations = {
     data.links = data.links || [];
     state.task = data;
   },
-  changeTasksList(state, data) {
-    state.categotiesList = data;
+  changePlaceTask(state, { task, toTask, categoryId }) {
+    const categoryIndex = state.categotiesList.findIndex(item => item.id === categoryId);
+    const oldTaskIndex = state.categotiesList[categoryIndex].tasks.findIndex(item => item.id === task.id);
+    const newTaskIndex = state.categotiesList[categoryIndex].tasks.findIndex(item => item.id === toTask.id);
+
+    state.categotiesList[categoryIndex].tasks[oldTaskIndex].order = toTask.order;
+    state.categotiesList[categoryIndex].tasks[newTaskIndex].order = task.order;
+    
+    state.categotiesList.forEach(item => {
+      item.tasks.sort((next, prev) => next.order < prev.order ? -1 : 0);
+    });
+    console.log(state.categotiesList[categoryIndex].tasks);
+  },
+  removeTask(state, { task, categoryId }) {
+    const categoryIndex = state.categotiesList.findIndex(item => item.id === categoryId);
+    const taskIndex = state.categotiesList[categoryIndex].tasks.findIndex(item => item.id === task.id);
+    state.categotiesList[categoryIndex].tasks.splice(taskIndex, 1);
+  },
+  appendTask(state, { task, categoryId }) {
+    const categoryIndex = state.categotiesList.findIndex(item => item.id === categoryId);
+    state.categotiesList[categoryIndex].tasks.push(task)
   },
 };
 

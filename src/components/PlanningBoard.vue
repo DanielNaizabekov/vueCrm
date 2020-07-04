@@ -49,21 +49,26 @@
       </div>
     </header>
 
-    <section class="board-content">
+    <section @dragover.prevent @drop="sectionDrop" class="board-content">
       <draggable
-        v-model="categoryModel.tasks"
-        @change="changeTaskPlace"
-        group="boardContent"
-        class="board-content-list"
         ghost-class="board-content-list-ghost"
       >
-        <PlanningBoardTask
+        <!-- <PlanningBoardTask
           v-for="item in categoryModel.tasks"
           :key="item.id"
           :task="item"
           :categoryId="categoryModel.id"
-        />
+        /> -->
       </draggable>
+
+
+      <PlanningBoardTask
+        @taskDrop="sectionDrop"
+        v-for="item in categoryModel.tasks"
+        :key="item.id"
+        :task="item"
+        :categoryId="categoryModel.id"
+      />
     </section>
 
     <footer class="board-footer">
@@ -179,8 +184,7 @@ export default {
     },
     changeCategoryTitle(value) {
       this.changeCategoryLoading = true;
-      const body = {...this.category};
-      body.title = value;
+      const body = {...this.category, title: value};
       this.changeCategory({ params: {id: this.category.id}, body })
       .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) )
       .finally(() => this.changeCategoryLoading = false);
@@ -224,30 +228,75 @@ export default {
       .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) )
       .finally(() => this.changeCategoryLoading = false);
     },
-    changeTaskPlace() {
-      this.changeCategoryLoading = true;
-      let categoriesList = [...this.categoriesList];
-      const category = {...this.categoryModel};
-      const categoryIndex = categoriesList.findIndex(cat => cat.id === category.id);
-      categoriesList[categoryIndex] = category;
 
-      this.changeTasksList(categoriesList);
-      this.onChangeCategoriesList();
+
+    // changeTaskPlace() {
+    //   this.changeCategoryLoading = true;
+    //   let categoriesList = [...this.categoriesList];
+    //   const category = {...this.categoryModel};
+    //   const categoryIndex = categoriesList.findIndex(cat => cat.id === category.id);
+    //   categoriesList[categoryIndex] = category;
+
+    //   this.changeTasksList(categoriesList);
+    //   this.onChangeCategoriesList();
+    // },
+    // onChangeCategoriesList() {
+    //   const body = {};
+    //   this.categoriesList.forEach(cat => {
+    //     let tasks = {};
+    //     cat.tasks.forEach(task => tasks[task.id] = {...task});
+
+    //     body[cat.id] = {
+    //       ...cat,
+    //       tasks,
+    //     };
+    //   });
+    //   this.changeCategoriesList({ body })
+    //   .finally(() => this.changeCategoryLoading = false)
+    // }
+
+
+
+    sectionDrop(e, toTask) {
+      let { task, categoryId } = JSON.parse( e.dataTransfer.getData('selectedTask') );
+
+      let hasTask = this.category.tasks.find(item => item.id === task.id);
+      if(hasTask) {
+        this.changePlaceTask(task, toTask);
+      } else {
+        this.removeTask(task, categoryId);
+        this.appendTask(task);
+
+        const body = {}
+        this.categoriesList.forEach(cat => {
+          let tasks = {};
+          cat.tasks.forEach(task => tasks[task.id] = {...task});
+
+          body[cat.id] = {
+            ...cat,
+            tasks,
+          };
+        });
+        this.changeCategoriesList({body});
+      }
     },
-    onChangeCategoriesList() {
-      const body = {};
-      this.categoriesList.forEach(cat => {
-        let tasks = {};
-        cat.tasks.forEach(task => tasks[task.id] = {...task});
-
-        body[cat.id] = {
-          ...cat,
-          tasks,
-        };
-      });
-      this.changeCategoriesList({ body })
-      .finally(() => this.changeCategoryLoading = false)
-    }
+    changePlaceTask(task, toTask) {
+      const body = { task, toTask, categoryId: this.category.id };
+      this.$store.commit('changePlaceTask', body);
+      
+      let tasks = {};
+      this.category.tasks.forEach(task => tasks[task.id] = {...task});
+      const data = { ...this.category, tasks };
+      this.changeCategory({ params: {id: this.category.id}, body: data })
+    },
+    removeTask(task, categoryId) {
+      const body = { task, categoryId };
+      this.$store.commit('removeTask', body);
+    },
+    appendTask(task) {
+      const body = { task, categoryId: this.category.id };
+      this.$store.commit('appendTask', body);
+    },
   },
 }
 </script>

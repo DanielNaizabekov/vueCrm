@@ -1,5 +1,12 @@
 <template>
-  <div @click="taskDetail" class="board-task">
+  <div
+    class="board-task"
+    draggable="true"
+    @dragstart="dragstart"
+    @dragover.prevent
+    @drop.stop="dropTask"
+    @click="taskDetail"
+  >
     <div class="board-task-title d-flex align-center justify-space-between">
       <span>{{ task.title }}</span>
       
@@ -97,6 +104,22 @@ export default {
     copyLink() {
       this.$notification({ text: 'Link copied' });
       this.onCloseTaskMoreMenu();
+    },
+
+
+
+
+    dragstart(e) {
+      let data = JSON.stringify({
+        task: {...this.task},
+        categoryId: this.categoryId,
+      });
+      e.dataTransfer.setData('selectedTask', data);
+    },
+    dropTask(e) {
+      // let data = e.dataTransfer.getData('selectedTask');
+      // let task = JSON.parse(data);
+      this.$emit('taskDrop', e, {...this.task});
     },
   },
 }
