@@ -49,21 +49,13 @@
       </div>
     </header>
 
-    <section @dragover.prevent @drop="sectionDrop" class="board-content">
-      <draggable
-        ghost-class="board-content-list-ghost"
-      >
-        <!-- <PlanningBoardTask
-          v-for="item in categoryModel.tasks"
-          :key="item.id"
-          :task="item"
-          :categoryId="categoryModel.id"
-        /> -->
-      </draggable>
-
-
+    <section
+      class="board-content"
+      @drop="dropTask"
+      @dragover.prevent
+    >
       <PlanningBoardTask
-        @taskDrop="sectionDrop"
+        @drop="dropTask"
         v-for="item in categoryModel.tasks"
         :key="item.id"
         :task="item"
@@ -123,10 +115,9 @@ import prepareErrors from '@/mixins/prepareErrors.mixin.js';
 import { planningValidations } from '@/utils/validationOptions';
 import { required, numeric } from 'vuelidate/lib/validators';
 import moment from 'moment';
-import draggable from 'vuedraggable';
 
 export default {
-  components: { TransitionCard, PlanningBoardTask, PlanningBoardInput, draggable },
+  components: { TransitionCard, PlanningBoardTask, PlanningBoardInput },
   props: {
     category: {
       type: Object,
@@ -228,74 +219,44 @@ export default {
       .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) )
       .finally(() => this.changeCategoryLoading = false);
     },
+    dropTask(event, toTask) {
+      const { roamingTask, roamingTaskCatId } = JSON.parse( event.dataTransfer.getData('roamingTask') );
 
-
-    // changeTaskPlace() {
-    //   this.changeCategoryLoading = true;
-    //   let categoriesList = [...this.categoriesList];
-    //   const category = {...this.categoryModel};
-    //   const categoryIndex = categoriesList.findIndex(cat => cat.id === category.id);
-    //   categoriesList[categoryIndex] = category;
-
-    //   this.changeTasksList(categoriesList);
-    //   this.onChangeCategoriesList();
-    // },
-    // onChangeCategoriesList() {
-    //   const body = {};
-    //   this.categoriesList.forEach(cat => {
-    //     let tasks = {};
-    //     cat.tasks.forEach(task => tasks[task.id] = {...task});
-
-    //     body[cat.id] = {
-    //       ...cat,
-    //       tasks,
-    //     };
-    //   });
-    //   this.changeCategoriesList({ body })
-    //   .finally(() => this.changeCategoryLoading = false)
-    // }
-
-
-
-    sectionDrop(e, toTask) {
-      let { task, categoryId } = JSON.parse( e.dataTransfer.getData('selectedTask') );
-
-      let hasTask = this.category.tasks.find(item => item.id === task.id);
-      if(hasTask) {
-        this.changePlaceTask(task, toTask);
-      } else {
-        this.removeTask(task, categoryId);
-        this.appendTask(task);
-
-        const body = {}
-        this.categoriesList.forEach(cat => {
-          let tasks = {};
-          cat.tasks.forEach(task => tasks[task.id] = {...task});
-
-          body[cat.id] = {
-            ...cat,
-            tasks,
-          };
-        });
-        this.changeCategoriesList({body});
-      }
+      const hasTask = this.category.tasks.find(item => item.id === roamingTask.id);
+      if(hasTask) this.changeTaskOrder(roamingTask, toTask);
+      else this.transferTask(roamingTask, roamingTaskCatId, toTask);
     },
-    changePlaceTask(task, toTask) {
-      const body = { task, toTask, categoryId: this.category.id };
-      this.$store.commit('changePlaceTask', body);
-      
+    changeTaskOrder(roamingTask, toTask) {
+      const data = {
+        roamingTask,
+        toTask,
+        categoryId: this.category.id
+      };
+      this.$store.commit('changeTaskOrder', data);
+      this.changeTaskOrderServerSide();
+    },
+    changeTaskOrderServerSide() {
       let tasks = {};
       this.category.tasks.forEach(task => tasks[task.id] = {...task});
-      const data = { ...this.category, tasks };
-      this.changeCategory({ params: {id: this.category.id}, body: data })
+      const body = { ...this.category, tasks };
+      this.changeCategory({ params: {id: this.category.id}, body });
     },
-    removeTask(task, categoryId) {
-      const body = { task, categoryId };
-      this.$store.commit('removeTask', body);
+    transferTask(roamingTask, roamingTaskCatId) {
+      const removeTaskData = { roamingTask, categoryId: roamingTaskCatId };
+      const appendTaskData = { roamingTask, categoryId: this.category.id };
+      this.$store.commit('removeTask', removeTaskData);
+      this.$store.commit('appendTask', appendTaskData);
+      this.transferTaskServerSide();
     },
-    appendTask(task) {
-      const body = { task, categoryId: this.category.id };
-      this.$store.commit('appendTask', body);
+    transferTaskServerSide() {
+      const body = {}
+      this.categoriesList.forEach(cat => {
+        let tasks = {};
+        cat.tasks.forEach(task => tasks[task.id] = {...task});
+
+        body[cat.id] = { ...cat, tasks };
+      });
+      this.changeCategoriesList({body});
     },
   },
 }
