@@ -8,6 +8,7 @@ import overlay from './components/app/Overlay';
 import notification from './plugins/notification';
 import currencyFilter from './filters/currency.filter.js';
 import 'normalize.css/normalize.css';
+import './dragDropTouch';
 
 Vue.config.productionTip = false
 export const bus = new Vue();

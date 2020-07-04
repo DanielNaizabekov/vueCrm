@@ -56,10 +56,10 @@
     >
       <PlanningBoardTask
         @drop="dropTask"
-        v-for="item in categoryModel.tasks"
+        v-for="item in category.tasks"
         :key="item.id"
         :task="item"
-        :categoryId="categoryModel.id"
+        :categoryId="category.id"
       />
     </section>
 
@@ -135,13 +135,7 @@ export default {
       setLimitModalLoading: false,
       limit: '',
       setLimitErrors: '',
-      categoryModel: {...this.category},
     };
-  },
-  watch: {
-    category(v) {
-      this.categoryModel = v;
-    },
   },
   validations: {
     limit: { required, numeric },
@@ -371,12 +365,6 @@ export default {
 .board-content {
   margin-top: 7px;
   flex: 1;
-}
-.board-content-list {
-  height: 100%;
-}
-.board-content-list-ghost {
-  background: #e1e5ee;
 }
 
 .board-footer-btn {

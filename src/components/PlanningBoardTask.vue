@@ -1,13 +1,19 @@
 <template>
   <div
     class="board-task"
+    :class="{'board-task-ghost': boardTaskGhost}"
     draggable="true"
     @dragstart="selectTask"
     @drop.stop="dropTask"
     @dragover.prevent
     @click="taskDetail"
+    @mouseleave="boardTaskGhost = false"
   >
-    <div class="board-task-title d-flex align-center justify-space-between">
+    <div
+      class="board-task-title d-flex align-center justify-space-between"
+      @dragenter="boardTaskGhost = true"
+      @dragleave="boardTaskGhost = false"
+    >
       <span>{{ task.title }}</span>
       
       <v-progress-circular
@@ -66,6 +72,7 @@ export default {
       isPersistentTaskMore: false,
       isOpenTaskMoreMenu: false,
       taskChangeLoading: false,
+      boardTaskGhost: false,
     };
   },
   methods: {
@@ -178,7 +185,6 @@ export default {
 .board-task {
   background: #FEFEFE;
   border-radius: 3px;
-  padding: 5px;
   box-shadow: rgba(23, 43, 77, 0.2) 0px 1px 1px, rgba(23, 43, 77, 0.2) 0px 0px 1px;
   transition: background .2s;
   margin-bottom: 5px;
@@ -190,6 +196,10 @@ export default {
 .board-task-title {
   font-size: 14px;
   color: #172B4D;
-  padding-left: 5px;
+  padding: 5px 5px 5px 10px;
+}
+.board-task-ghost {
+  background: #F4F5F7;
+  transition: 0s;
 }
 </style>
