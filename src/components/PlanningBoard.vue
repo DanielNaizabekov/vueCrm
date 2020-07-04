@@ -50,12 +50,20 @@
     </header>
 
     <section class="board-content">
-      <PlanningBoardTask
-        v-for="item in category.tasks"
-        :key="item.id"
-        :task="item"
-        :categoryId="category.id"
-      />
+      <draggable
+        v-model="categoryModel.tasks"
+        @change="changeTaskPlace"
+        group="boardContent"
+        class="board-content-list"
+        ghost-class="board-content-list-ghost"
+      >
+        <PlanningBoardTask
+          v-for="item in categoryModel.tasks"
+          :key="item.id"
+          :task="item"
+          :categoryId="categoryModel.id"
+        />
+      </draggable>
     </section>
 
     <footer class="board-footer">
@@ -104,15 +112,16 @@
 import TransitionCard from '@/components/app/TransitionCard';
 import PlanningBoardTask from '@/components/PlanningBoardTask';
 import PlanningBoardInput from '@/components/PlanningBoardInput';
-import { mapActions } from 'vuex';
-import { CHANGE_CATEGORY, DELETE_CATEGORY, CREATE_TASK } from '@/consts';
+import { mapGetters, mapActions, mapMutations } from 'vuex';
+import { CHANGE_CATEGORY, DELETE_CATEGORY, CREATE_TASK, GET_CATEGORIES, CHANGE_CATEGORIES_LIST } from '@/consts';
 import prepareErrors from '@/mixins/prepareErrors.mixin.js';
 import { planningValidations } from '@/utils/validationOptions';
 import { required, numeric } from 'vuelidate/lib/validators';
 import moment from 'moment';
+import draggable from 'vuedraggable';
 
 export default {
-  components: { TransitionCard, PlanningBoardTask, PlanningBoardInput },
+  components: { TransitionCard, PlanningBoardTask, PlanningBoardInput, draggable },
   props: {
     category: {
       type: Object,
@@ -130,18 +139,31 @@ export default {
       setLimitModalLoading: false,
       limit: '',
       setLimitErrors: '',
+      categoryModel: {...this.category},
     };
+  },
+  watch: {
+    category(v) {
+      this.categoryModel = v;
+    },
   },
   validations: {
     limit: { required, numeric },
   },
   mixins: [prepareErrors],
+  computed: {
+    ...mapGetters({
+      categoriesList: GET_CATEGORIES,
+    }),
+  },
   methods: {
     ...mapActions({
       changeCategory: CHANGE_CATEGORY,
       deleteCategory: DELETE_CATEGORY,
       createTask: CREATE_TASK,
+      changeCategoriesList: CHANGE_CATEGORIES_LIST,
     }),
+    ...mapMutations(['changeTasksList']),
     openHeaderInput() {
       this.isOpenHeaderInput = true;
     },
@@ -196,12 +218,36 @@ export default {
     },
     onCreateTask(value) {
       this.changeCategoryLoading = true;
-      const body = { title: value, date: moment().valueOf() };
+      const body = { title: value, date: moment().valueOf(), order: moment().valueOf() };
       this.createTask({ params: {categoryId: this.category.id}, body })
       .then( () => this.$notification({ text: 'Task created successfully' }) )
       .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) )
       .finally(() => this.changeCategoryLoading = false);
     },
+    changeTaskPlace() {
+      this.changeCategoryLoading = true;
+      let categoriesList = [...this.categoriesList];
+      const category = {...this.categoryModel};
+      const categoryIndex = categoriesList.findIndex(cat => cat.id === category.id);
+      categoriesList[categoryIndex] = category;
+
+      this.changeTasksList(categoriesList);
+      this.onChangeCategoriesList();
+    },
+    onChangeCategoriesList() {
+      const body = {};
+      this.categoriesList.forEach(cat => {
+        let tasks = {};
+        cat.tasks.forEach(task => tasks[task.id] = {...task});
+
+        body[cat.id] = {
+          ...cat,
+          tasks,
+        };
+      });
+      this.changeCategoriesList({ body })
+      .finally(() => this.changeCategoryLoading = false)
+    }
   },
 }
 </script>
@@ -314,11 +360,15 @@ export default {
 
 .board-content {
   margin-top: 7px;
+  flex: 1;
+}
+.board-content-list {
+  height: 100%;
+}
+.board-content-list-ghost {
+  background: #e1e5ee;
 }
 
-.board-footer {
-  margin-top: auto;
-}
 .board-footer-btn {
   width: 100%;
   color: #42526E;

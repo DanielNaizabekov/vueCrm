@@ -75,12 +75,18 @@ const mutations = {
       : [];
     });
 
-    categotiesList.sort((next, prev) => next.weight < prev.weight ? -1 : 0);
+    categotiesList.sort((next, prev) => next.order < prev.order ? -1 : 0);
+    categotiesList.forEach(item => {
+      item.tasks.sort((next, prev) => next.order < prev.order ? -1 : 0);
+    });
     state.categotiesList = categotiesList;
   },
   [GET_TASK](state, data) {
     data.links = data.links || [];
     state.task = data;
+  },
+  changeTasksList(state, data) {
+    state.categotiesList = data;
   },
 };
 

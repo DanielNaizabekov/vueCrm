@@ -83,38 +83,27 @@ export default {
     },
     onCreateCategory(value) {
       this.createCategoryLoading = true;
-      const body = { title: value, weight: Date.now().toString() };
+      const body = { title: value, order: Date.now().toString() };
       this.createCategory({ body })
       .then( () => this.$notification({ text: 'Category created successfully' }) )
       .catch( () => this.$notification({ text: 'Data loading failed', color: 'red lighten-2' }) )
       .finally(() => this.createCategoryLoading = false);
     },
     changeBoardPlace() {
-      let oldList = this.categoriesListStore.map(item => item.weight);
-      let newList = this.categoriesList.map(item => item.weight);
-
-      let changedCat = null;
-      oldList.forEach((item, i) => {
-        if(item !== newList[i]) {
-          changedCat = item;
-        }
-      });
-
-      let oldIndex = oldList.indexOf(changedCat);
-      let newIndex = newList.indexOf(changedCat);
-      let oldItem = {...this.categoriesListStore[oldIndex]};
-      let newItem = {...this.categoriesListStore[newIndex]};
-
-      this.categoriesListStore[oldIndex].weight = newItem.weight;
-      this.categoriesListStore[newIndex].weight = oldItem.weight;
-      // console.log(oldIndex)
-      // console.log(newIndex)
-      // console.log(oldItem)
-      // console.log(newItem)
+      let oldList = this.categoriesListStore.map(item => ({...item}));
+      let newList = this.categoriesList.map(item => ({...item}));
+      newList.forEach((newCat, i) => newCat.order = oldList[i].order);
 
       const body = {}
-      this.categoriesListStore.forEach(item => body[item.id] = item);
+      newList.forEach(cat => {
+        let tasks = {};
+        cat.tasks.forEach(task => tasks[task.id] = {...task});
 
+        body[cat.id] = {
+          ...cat,
+          tasks,
+        };
+      });
       this.changeCategoriesList({body});
     },
   },
