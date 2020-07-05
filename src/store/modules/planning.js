@@ -105,6 +105,8 @@ const mutations = {
   },
   appendTask(state, { roamingTask, categoryId }) {
     const category = state.categotiesList.find(item => item.id === categoryId);
+    const lastTask = category.tasks[category.tasks.length - 1];
+    if(lastTask) roamingTask.order = +lastTask.order + 10;
     category.tasks.push(roamingTask);
   },
 };

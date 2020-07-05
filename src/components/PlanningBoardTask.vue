@@ -7,7 +7,6 @@
     @drop.stop="dropTask"
     @dragover.prevent
     @click="taskDetail"
-    @mouseleave="boardTaskGhost = false"
   >
     <div
       class="board-task-title d-flex align-center justify-space-between"
@@ -120,6 +119,7 @@ export default {
       event.dataTransfer.setData('roamingTask', data);
     },
     dropTask(e) {
+      this.boardTaskGhost = false;
       this.$emit('drop', e, {...this.task});
     },
   },
@@ -199,7 +199,7 @@ export default {
   padding: 5px 5px 5px 10px;
 }
 .board-task-ghost {
-  background: #F4F5F7;
+  background: #e1e5ee;
   transition: 0s;
 }
 </style>

@@ -365,6 +365,7 @@ export default {
 .board-content {
   margin-top: 7px;
   flex: 1;
+  min-height: 40px;
 }
 
 .board-footer-btn {
