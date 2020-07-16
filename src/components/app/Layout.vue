@@ -14,11 +14,11 @@
 
     <Navbar @toggleSidebar="toggleSidebar" />
 
-    <v-content class="fill-height">
+    <v-content class="content fill-height" :class="{fixed: fixedSection}">
       <div v-if="allowBackBtn" class="backspace-btn" @click="goBack">
         <v-icon x-large>keyboard_backspace</v-icon>
       </div>
-      <section class="main-section">
+      <section class="main-section" :class="{fixed: fixedSection}">
         <router-view/>
       </section>
     </v-content>
@@ -43,6 +43,9 @@ export default {
     allowBackBtn() {
       return !!this.$route.meta.back;
     },
+    fixedSection() {
+      return !!this.$route.meta.fixedSection;
+    },
   },
   methods: {
     goBack() {
@@ -56,10 +59,16 @@ export default {
 </script>
 
 <style scoped>
+.content.fixed {
+  padding-left: 0px !important;
+}
 .main-section {
   padding: 15px;
   /* min-height: 100%;
   height: 1px; */
+}
+.main-section.fixed {
+  padding: 0;
 }
 .backspace-btn {
   display: inline-block;

@@ -12,6 +12,12 @@ export default new Router({
       redirect: { name: 'planning' },
       children: [
         {
+          path: 'profile/',
+          name: 'profile',
+          meta: { title: 'Profile', back: true },
+          component: () => import('../views/Profile'),
+        },
+        {
           path: 'planning/',
           name: 'planning',
           meta: { title: 'Planning' },
@@ -31,10 +37,10 @@ export default new Router({
           component: () => import('../views/Currency'),
         },
         {
-          path: 'profile/',
-          name: 'profile',
-          meta: { title: 'Profile', back: true },
-          component: () => import('../views/Profile'),
+          path: 'paint/',
+          name: 'paint',
+          meta: { title: 'Paint', fixedSection: true },
+          component: () => import('../views/Paint'),
         },
       ],
       beforeEnter(_,__,next) {
