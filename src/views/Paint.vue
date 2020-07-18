@@ -8,7 +8,10 @@
             <template #activator="{ on: menu }">
               <v-tooltip open-delay="700" bottom>
                 <template #activator="{ on: tooltip }">
-                  <v-btn tile small icon color="#393939" v-on="{...menu, ...tooltip}">
+                  <v-btn
+                    tile small icon color="#393939"
+                    v-on="{...menu, ...tooltip}"
+                  >
                     <v-icon>line_weight</v-icon>
                   </v-btn>
                 </template>
@@ -28,7 +31,12 @@
             <template #activator="{ on: menu }">
               <v-tooltip open-delay="700" bottom>
                 <template #activator="{ on: tooltip }">
-                  <v-btn class="ml-3" tile small icon color="#393939" v-on="{...menu, ...tooltip}">
+                  <v-btn
+                    @click="removeActiveClasses"
+                    class="ml-3"
+                    tile small icon color="#393939"
+                    v-on="{...menu, ...tooltip}"
+                  >
                     <v-icon>palette</v-icon>
                   </v-btn>
                 </template>
@@ -36,13 +44,19 @@
               </v-tooltip>
             </template>
             <div @click.stop>
-              <v-color-picker v-model="models.lineColor" hide-inputs/>
+              <v-color-picker flat v-model="models.lineColor" hide-inputs/>
             </div>
+            <div class="d-flex justify-end pa-3 pt-0"><v-btn small>Ok</v-btn></div>
           </v-menu>
 
           <v-tooltip open-delay="700" bottom>
             <template #activator="{ on }">
-              <v-btn class="ml-3" @click="clear" v-on="on" tile small icon color="#393939">
+              <v-btn
+                class="ml-3"
+                @click="clear(); removeActiveClasses();"
+                tile small icon color="#393939"
+                v-on="on"
+              >
                 <v-icon>clear</v-icon>
               </v-btn>
             </template>
@@ -54,12 +68,9 @@
               <v-btn
                 class="ml-3 paint-header-btn"
                 :class="{active: isRubberBtnActive}"
-                @click="takeRubber"
+                @click.stop="takeRubber"
+                tile small icon color="#393939"
                 v-on="on"
-                tile
-                small
-                icon
-                color="#393939"
               >
                 <v-icon>stay_primary_portrait</v-icon>
               </v-btn>
@@ -72,16 +83,24 @@
     </header>
 
     <canvas
-      @mousedown="mousedown"
-      @mouseleave="mouseleave"
-      @mousemove="mousemove"
+      @mousedown="canvMousedown"
+      @mouseleave="canvMouseleave"
+      @mousemove="canvMousemove"
+      @touchmove="canvTouchmove"
+      @touchend="canvTouchend"
       ref="canvas"
-      id=canvas
+      id="canvas"
+      :style="`cursor: url(${cursorType.size}) ${cursorType.offset} ${cursorType.offset}, crosshair;`"
     />
   </div>
 </template>
 
 <script>
+import * as rubberSize1 from '../assets/img/rubber-size-1.png';
+import * as rubberSize3 from '../assets/img/rubber-size-3.png';
+import * as rubberSize5 from '../assets/img/rubber-size-5.png';
+import * as rubberSize7 from '../assets/img/rubber-size-7.png';
+
 export default {
   data() {
     return {
@@ -103,27 +122,33 @@ export default {
     styles() {
       const lineWidth = this.models.lineWidthList[this.models.lineWidth];
       const lineColor = this.models.lineColor;
-
       return {lineWidth, lineColor};
+    },
+    cursorType() {
+      if(!this.isRubberBtnActive) return {size: 0, offset: 0};
+      let cursor = {};
+      const { lineWidth } = this.styles;
+      if(lineWidth === 1) cursor = {size: rubberSize1, offset: '2'};
+      else if(lineWidth === 3) cursor = {size: rubberSize3, offset: '4'};
+      else if(lineWidth === 5) cursor = {size: rubberSize5, offset: '5'};
+      else if(lineWidth === 7) cursor = {size: rubberSize7, offset: '7'};
+      return cursor;
     },
   },
   methods: {
+    removeActiveClasses() {
+      this.isRubberBtnActive = false;
+    },
     clear() {
       this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+      this.models.lineWidth = 0;
+      this.models.lineColor = '#000';
     },
     takeRubber() {
       this.isRubberBtnActive = true;
       this.models.lineColor = '#fff';
     },
-    mousedown() {
-      this.isMouseDown = true;
-      this.documentBody.addEventListener('mouseup', this.bodyMouseUpHandler);
-    },
-    mouseleave() {
-      this.ctx.beginPath();
-    },
-    mousemove(event) {
-      if(!this.isMouseDown) return;
+    drawLine(event) {
       const ctx = this.ctx;
       const offsetX = event.offsetX;
       const offsetY = event.offsetY;
@@ -135,12 +160,37 @@ export default {
       ctx.stroke();
 
       ctx.beginPath();
-      ctx.arc(offsetX, offsetY, lineWidth, 0, Math.PI * 2);
       ctx.fillStyle = lineColor;
-      ctx.fill();
+      if(this.isRubberBtnActive) {
+        ctx.fillRect(offsetX - lineWidth, offsetY - lineWidth, lineWidth * 2, lineWidth * 2);
+      } else {
+        ctx.arc(offsetX, offsetY, lineWidth, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       ctx.beginPath();
       ctx.moveTo(offsetX, offsetY);
+    },
+    canvMousedown(event) {
+      this.drawLine(event);
+      this.isMouseDown = true;
+      this.documentBody.addEventListener('mouseup', this.bodyMouseUpHandler);
+    },
+    canvMouseleave() {
+      if(this.isMouseDown) this.ctx.beginPath();
+    },
+    canvMousemove(event) {
+      if(this.isMouseDown) this.drawLine(event);
+    },
+    canvTouchmove(event) {
+      const canvas = this.$refs.canvas;
+      const rect = canvas.getBoundingClientRect();
+      const offsetX = event.touches[0].clientX - rect.left;
+      const offsetY = event.touches[0].clientY - rect.top;
+      this.drawLine({offsetX, offsetY});
+    },
+    canvTouchend() {
+      this.ctx.beginPath();
     },
   },
   mounted() {
@@ -171,7 +221,7 @@ export default {
   height: 47px;
 }
 .paint-header-btn.active {
-  background: #EFEFEF;
+  background: #E0E0E0;
 }
 
 .line-width {
