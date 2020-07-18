@@ -270,4 +270,12 @@ export default {
   color: #ff5252;
   font-size: 12px;
 }
+
+@media (min-width: 600px) {
+  .col-sm {
+    flex-basis: 0;
+    flex-grow: 1;
+    max-width: 100%;
+  }
+}
 </style>
