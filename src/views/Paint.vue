@@ -78,6 +78,20 @@
             <span>Take rubber</span>
           </v-tooltip>
 
+          <v-tooltip>
+            <template #activator="{ on }">
+              <v-btn
+                class="ml-3"
+                @click="replay(); removeActiveClasses();"
+                tile small icon color="#393939"
+                v-on="on"
+              >
+                <v-icon>replay</v-icon>
+              </v-btn>
+            </template>
+            <span>Replay</span>
+          </v-tooltip>
+
         </div>
       </v-banner>
     </header>
@@ -116,6 +130,7 @@ export default {
         lineWidthList: [1, 3, 5, 7],
         lineColor: '#000',
       },
+      replayCoords: [],
     };
   },
   computed: {
@@ -148,6 +163,25 @@ export default {
       this.isRubberBtnActive = true;
       this.models.lineColor = '#fff';
     },
+    replay() {
+      const coords = this.replayCoords;
+      this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+      let i = 0;
+      const interval = () => {
+        if(i >= this.replayCoords.length) return;
+
+        if(coords[i].color || coords[i].width) {
+          this.models.lineColor = coords[i].color;
+          this.models.lineWidth = coords[i].width;
+          this.isRubberBtnActive = coords[i].isRubberBtnActive;
+        }
+        this.drawLine({offsetX: coords[i].x, offsetY: coords[i].y});
+        i++;
+        setTimeout(interval, 30);
+      };
+      interval();
+    },
     drawLine(event) {
       const ctx = this.ctx;
       const offsetX = event.offsetX;
@@ -172,6 +206,13 @@ export default {
       ctx.moveTo(offsetX, offsetY);
     },
     canvMousedown(event) {
+      this.replayCoords.push({
+        color: this.models.lineColor,
+        width: this.models.lineWidth,
+        isRubberBtnActive: this.isRubberBtnActive,
+      });
+
+      this.ctx.beginPath();
       this.drawLine(event);
       this.isMouseDown = true;
       this.documentBody.addEventListener('mouseup', this.bodyMouseUpHandler);
@@ -180,7 +221,9 @@ export default {
       if(this.isMouseDown) this.ctx.beginPath();
     },
     canvMousemove(event) {
-      if(this.isMouseDown) this.drawLine(event);
+      if(!this.isMouseDown) return;
+      this.drawLine(event);
+      this.replayCoords.push({x: event.offsetX, y: event.offsetY});
     },
     canvTouchmove(event) {
       const canvas = this.$refs.canvas;
@@ -205,7 +248,6 @@ export default {
 
     this.documentBody = document.querySelector('body');
     this.bodyMouseUpHandler = () => {
-      this.ctx.beginPath();
       this.isMouseDown = false;
       this.documentBody.removeEventListener('mouseup', this.bodyMouseUpHandler);
     };
