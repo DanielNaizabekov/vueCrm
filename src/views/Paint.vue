@@ -100,11 +100,13 @@
       @mousedown="canvMousedown"
       @mouseleave="canvMouseleave"
       @mousemove="canvMousemove"
+      @touchstart="canvTouchstart"
       @touchmove="canvTouchmove"
       @touchend="canvTouchend"
       ref="canvas"
       id="canvas"
       :style="`cursor: url(${cursorType.size}) ${cursorType.offset} ${cursorType.offset}, crosshair;`"
+      :class="{disabled: canvasDisabled}"
     />
   </div>
 </template>
@@ -131,6 +133,7 @@ export default {
         lineColor: '#000',
       },
       replayCoords: [],
+      canvasDisabled: false,
     };
   },
   computed: {
@@ -158,6 +161,8 @@ export default {
       this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
       this.models.lineWidth = 0;
       this.models.lineColor = '#000';
+      this.replayCoords = [];
+      this.canvasDisabled = false;
     },
     takeRubber() {
       this.isRubberBtnActive = true;
@@ -166,10 +171,11 @@ export default {
     replay() {
       const coords = this.replayCoords;
       this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+      this.canvasDisabled = true;
 
       let i = 0;
       const interval = () => {
-        if(i >= this.replayCoords.length) return;
+        if(i >= this.replayCoords.length) return this.canvasDisabled = false;
 
         if(coords[i].color || coords[i].width) {
           this.models.lineColor = coords[i].color;
@@ -225,15 +231,24 @@ export default {
       this.drawLine(event);
       this.replayCoords.push({x: event.offsetX, y: event.offsetY});
     },
+    canvTouchstart() {
+      this.ctx.beginPath();
+      this.replayCoords.push({
+        color: this.models.lineColor,
+        width: this.models.lineWidth,
+        isRubberBtnActive: this.isRubberBtnActive,
+      });
+    },
     canvTouchmove(event) {
       const canvas = this.$refs.canvas;
       const rect = canvas.getBoundingClientRect();
       const offsetX = event.touches[0].clientX - rect.left;
       const offsetY = event.touches[0].clientY - rect.top;
       this.drawLine({offsetX, offsetY});
+      this.replayCoords.push({x: offsetX, y: offsetY});
     },
     canvTouchend() {
-      this.ctx.beginPath();
+      event.preventDefault();
     },
   },
   mounted() {
@@ -258,6 +273,9 @@ export default {
 <style scoped>
 #canvas {
   display: block;
+}
+#canvas.disabled {
+  pointer-events: none;
 }
 .paint-header {
   height: 47px;
