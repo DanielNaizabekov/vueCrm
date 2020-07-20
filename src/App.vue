@@ -16,3 +16,12 @@ export default {
   name: 'App',
 };
 </script>
+
+<style>
+html, body, #app, .v-application {
+  height: 100% !important;
+}
+.v-application--wrap {
+  min-height: auto !important;
+}
+</style>

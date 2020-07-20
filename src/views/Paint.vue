@@ -1,5 +1,5 @@
 <template>
-  <div class="paint-page">
+  <div class="paint-page" @touchmove="preventPageRefresh">
     <header ref="paintHeader" class="paint-header">
       <v-banner single-line>
         <div class="d-flex justify-end align-center">
@@ -154,6 +154,9 @@ export default {
     },
   },
   methods: {
+    preventPageRefresh(event) {
+      event.preventDefault();
+    },
     removeActiveClasses() {
       this.isRubberBtnActive = false;
     },

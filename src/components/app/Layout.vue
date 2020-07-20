@@ -92,3 +92,9 @@ export default {
   text-decoration: underline;
 }
 </style>
+
+<style>
+.v-navigation-drawer {
+  height: 100% !important;
+}
+</style>
