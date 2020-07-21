@@ -133,6 +133,7 @@ export default {
         lineColor: '#000',
       },
       replayCoords: [],
+      replayTimeout: null,
       canvasDisabled: false,
     };
   },
@@ -172,6 +173,7 @@ export default {
       this.models.lineColor = '#fff';
     },
     replay() {
+      clearTimeout(this.replayTimeout);
       const coords = this.replayCoords;
       this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
       this.canvasDisabled = true;
@@ -187,7 +189,7 @@ export default {
         }
         this.drawLine({offsetX: coords[i].x, offsetY: coords[i].y});
         i++;
-        setTimeout(interval, 30);
+        this.replayTimeout = setTimeout(interval, 30);
       };
       interval();
     },
